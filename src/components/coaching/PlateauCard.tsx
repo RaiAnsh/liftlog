@@ -31,7 +31,7 @@ export default function PlateauCard({ item, settings, all, usage }: { item: Plat
     })
     await hide()
     setSheet(null)
-    showToast(`Rep range ${min}–${max}`, { sub: `Applied to ${ex.name} and your routines.` })
+    showToast(`Rep range ${min}–${max}`, { sub: `Applied to ${ex.name} and your templates.` })
   }
 
   async function swapTo(to: Exercise) {
@@ -43,7 +43,7 @@ export default function PlateauCard({ item, settings, all, usage }: { item: Plat
     })
     await hide()
     setSheet(null)
-    showToast(n ? `Swapped to ${to.name}` : 'Not in any routine', { sub: n ? `Replaced in ${n} routine${n === 1 ? '' : 's'}.` : `Add ${to.name} when you next log a workout.` })
+    showToast(n ? `Swapped to ${to.name}` : 'Not in any template', { sub: n ? `Replaced in ${n} template${n === 1 ? '' : 's'}.` : `Add ${to.name} when you next log a workout.` })
   }
 
   const alts = sheet === 'swap' ? similarExercises(ex, [...all.values()], usage).slice(0, 8) : []
@@ -52,7 +52,7 @@ export default function PlateauCard({ item, settings, all, usage }: { item: Plat
   return (
     <div className="card space-y-3 border border-warn/40">
       <Link to={`/exercise/${encodeURIComponent(ex.nameKey)}`} className="flex items-center gap-3">
-        <ExerciseThumb name={ex.name} muscle={ex.primaryMuscles[0]} size={44} />
+        <ExerciseThumb name={ex.name} muscles={ex.primaryMuscles} secondary={ex.secondaryMuscles} size={44} />
         <div className="min-w-0 flex-1">
           <div className="truncate font-bold">{ex.name} has stalled</div>
           <div className="text-sm text-mute">No gain in top weight or est. 1RM over the last 3 sessions (latest top set {w}).</div>

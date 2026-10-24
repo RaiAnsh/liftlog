@@ -1,7 +1,7 @@
 import { useDeferredValue, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useExerciseItems } from '../lib/useExerciseItems'
-import { BackBar, Title } from '../components/PageHeader'
+import { Title } from '../components/PageHeader'
 import { ChevronRight, SearchIcon } from '../components/Icons'
 import ExerciseThumb from '../components/ExerciseThumb'
 import { MUSCLES, MUSCLE_LABELS, type Muscle } from '../types'
@@ -27,8 +27,7 @@ export default function Exercises() {
 
   return (
     <div className="space-y-3">
-      <BackBar />
-      <Title sub="Includes machines found at Planet Fitness">Exercises</Title>
+      <Title sub="Includes Planet Fitness machines">Exercises</Title>
       <div className="relative">
         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-mute"><SearchIcon /></span>
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search exercises"
@@ -43,7 +42,7 @@ export default function Exercises() {
         {rows.map((i, idx) => (
           <Link key={i.key} to={`/exercise/${encodeURIComponent(i.key)}`}
             className={`row-press flex items-center gap-3 px-3 py-2.5 ${idx ? 'border-t border-line' : ''}`}>
-            <ExerciseThumb name={i.name} muscle={i.muscles[0]} size={48} />
+            <ExerciseThumb name={i.name} muscles={i.muscles} size={48} />
             <div className="min-w-0 flex-1">
               <div className="truncate font-medium">{i.name}</div>
               <div className="truncate text-sm text-mute">

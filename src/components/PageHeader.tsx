@@ -1,11 +1,14 @@
 import { useNavigate } from 'react-router-dom'
 import { ChevronLeft } from './Icons'
 
-export function Title({ children, sub }: { children: React.ReactNode; sub?: string }) {
+export function Title({ children, sub, right }: { children: React.ReactNode; sub?: string; right?: React.ReactNode }) {
   return (
-    <div className="mb-4">
-      <h1 className="text-[32px] font-extrabold leading-tight tracking-tight">{children}</h1>
-      {sub && <p className="text-mute">{sub}</p>}
+    <div className="mb-4 flex items-start justify-between gap-3">
+      <div>
+        <h1 className="text-[32px] font-extrabold leading-tight tracking-tight">{children}</h1>
+        {sub && <p className="text-mute">{sub}</p>}
+      </div>
+      {right}
     </div>
   )
 }

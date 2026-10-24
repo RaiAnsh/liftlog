@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
-import { NavLink, Route, Routes } from 'react-router-dom'
+import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { useSettings } from './db/settings'
-import Home from './screens/Home'
+import Profile from './screens/Profile'
 import History from './screens/History'
 import WorkoutDetail from './screens/WorkoutDetail'
 import Exercises from './screens/Exercises'
@@ -12,24 +12,25 @@ import RoutineEdit from './screens/RoutineEdit'
 import ActiveBar from './components/ActiveBar'
 import ToastHost from './components/ToastHost'
 import Plates from './screens/Plates'
-import Progress from './screens/Progress'
 import { useDraft } from './workout/store'
 import Settings from './screens/Settings'
 import ImportScreen from './screens/ImportScreen'
 import TagReview from './screens/TagReview'
-import { ChartIcon, ClockIcon, DumbbellIcon, GearIcon, HomeIcon } from './components/Icons'
+import { ClockIcon, DumbbellIcon, ListIcon, PersonIcon } from './components/Icons'
+import { PageTransition } from './components/Motion'
 
+// Same four tabs as Strong: Profile, History, Workout, Exercises.
 const TABS = [
-  { to: '/', label: 'Home', Icon: HomeIcon },
-  { to: '/workout', label: 'Workout', Icon: DumbbellIcon },
-  { to: '/history', label: 'History', Icon: ClockIcon },
-  { to: '/progress', label: 'Progress', Icon: ChartIcon },
-  { to: '/settings', label: 'Settings', Icon: GearIcon },
+  { to: '/profile', label: 'Profile', Icon: PersonIcon, match: ['/profile'] },
+  { to: '/history', label: 'History', Icon: ClockIcon, match: ['/history'] },
+  { to: '/workout', label: 'Workout', Icon: DumbbellIcon, match: ['/workout', '/routine'] },
+  { to: '/exercises', label: 'Exercises', Icon: ListIcon, match: ['/exercises', '/exercise/'] },
 ]
 
 export default function App() {
   const { theme } = useSettings()
   const active = useDraft()
+  const { pathname } = useLocation()
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
@@ -37,8 +38,10 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-[100dvh] max-w-xl flex-col">
       <main className={`flex-1 px-4 pt-3 ${active ? 'pb-56' : 'pb-32'}`}>
+        <PageTransition routeKey={pathname}>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Navigate to="/workout" replace />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/workout" element={<Workout />} />
           <Route path="/routines" element={<Routines />} />
           <Route path="/routine/:id" element={<RoutineEdit />} />
@@ -46,12 +49,13 @@ export default function App() {
           <Route path="/history/:id" element={<WorkoutDetail />} />
           <Route path="/exercises" element={<Exercises />} />
           <Route path="/exercise/:key" element={<ExerciseDetail />} />
-          <Route path="/progress" element={<Progress />} />
           <Route path="/plates" element={<Plates />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/import" element={<ImportScreen />} />
           <Route path="/tags" element={<TagReview />} />
+          <Route path="*" element={<Navigate to="/workout" replace />} />
         </Routes>
+        </PageTransition>
       </main>
       <ToastHost />
       <ActiveBar />
@@ -60,19 +64,16 @@ export default function App() {
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="mx-auto flex h-[58px] max-w-xl">
-          {TABS.map(({ to, label, Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/'}
-              className={({ isActive }) =>
-                `flex flex-1 flex-col items-center gap-0.5 pb-1.5 pt-2 text-[11px] font-medium ${isActive ? 'text-accent' : 'text-mute'}`
-              }
-            >
-              <Icon />
-              {label}
-            </NavLink>
-          ))}
+          {TABS.map(({ to, label, Icon, match }) => {
+            const on = match.some((m) => pathname.startsWith(m))
+            return (
+              <NavLink key={to} to={to} className={`relative flex flex-1 flex-col items-center gap-0.5 pb-1.5 pt-2 text-[11px] font-medium transition-colors ${on ? 'text-accent' : 'text-mute'}`}>
+                {on && <span className="fade-in absolute top-0 h-[3px] w-8 rounded-b-full bg-accent" />}
+                <span key={String(on)} className={on ? 'tab-bounce' : ''}><Icon /></span>
+                {label}
+              </NavLink>
+            )
+          })}
         </div>
       </nav>
     </div>

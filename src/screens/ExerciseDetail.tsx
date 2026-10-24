@@ -9,6 +9,7 @@ import { BackBar } from '../components/PageHeader'
 import PlateauCard from '../components/coaching/PlateauCard'
 import { useCoaching } from '../coaching/useCoaching'
 import ExerciseThumb from '../components/ExerciseThumb'
+import MuscleFigure from '../components/MuscleFigure'
 import { fmtSet } from '../components/WorkoutCard'
 import { records, sessionPoints } from '../lib/exerciseStats'
 import { formatVolume } from '../lib/stats'
@@ -25,6 +26,7 @@ export default function ExerciseDetail() {
   const key = decodeURIComponent(useParams().key ?? '')
   const { units } = useSettings()
   const [tab, setTab] = useState<Tab>('about')
+  const [photos, setPhotos] = useState(false)
   const { h, c, settings } = useCoaching()
   const data = useLiveQuery(async () => {
     const ex = (await db.exercises.where('nameKey').equals(key).first()) ?? null
@@ -48,7 +50,7 @@ export default function ExerciseDetail() {
     <div className="space-y-4">
       <BackBar />
       <div className="flex items-center gap-3">
-        <ExerciseThumb name={name} muscle={proto.primaryMuscles[0]} size={64} />
+        <ExerciseThumb name={name} muscles={proto.primaryMuscles} secondary={proto.secondaryMuscles} size={64} />
         <div className="min-w-0">
           <h1 className="text-[26px] font-extrabold leading-tight tracking-tight">{name}</h1>
           <div className="text-sm text-mute">{proto.primaryMuscles.map((m) => MUSCLE_LABELS[m]).join(', ') || 'No muscles tagged'} · <span className="capitalize">{proto.equipment}</span></div>
@@ -67,9 +69,28 @@ export default function ExerciseDetail() {
 
       {tab === 'about' && (
         <div className="space-y-4">
+          <div className="card">
+            <div className="grid grid-cols-2 gap-2">
+              {(['front', 'back'] as const).map((v) => (
+                <div key={v} className="text-center">
+                  <MuscleFigure view={v} primary={proto.primaryMuscles} secondary={proto.secondaryMuscles} className="mx-auto h-60 w-full" title={`${name}, ${v} view`} />
+                  <div className="label mt-1">{v}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 flex justify-center gap-5 text-xs text-mute">
+              <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" />Primary</span>
+              <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-accent/45" />Secondary</span>
+            </div>
+          </div>
           {imgs.length > 0 && (
-            <div className="grid grid-cols-2 gap-2 overflow-hidden rounded-2xl">
-              {imgs.map((u, i) => <img key={u} src={u} alt={`${name} step ${i + 1}`} className="aspect-square w-full bg-white object-cover" />)}
+            <div>
+              <button className="text-sm font-semibold text-accent" onClick={() => setPhotos((p) => !p)}>{photos ? 'Hide form photos' : 'Show form photos'}</button>
+              {photos && (
+                <div className="fade-in mt-2 grid grid-cols-2 gap-2 overflow-hidden rounded-2xl">
+                  {imgs.map((u, i) => <img key={u} src={u} alt={`${name} step ${i + 1}`} className="aspect-square w-full bg-white object-cover" />)}
+                </div>
+              )}
             </div>
           )}
           <div className="flex flex-wrap gap-2">

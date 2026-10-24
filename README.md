@@ -6,7 +6,7 @@ muscle volume, skip warnings, plateau detection).
 
 - **No account, no backend, no cost.** Everything is stored on your device (IndexedDB).
 - **Installs like an app** on iPhone via Safari → Add to Home Screen, and works in airplane mode.
-- **Photos and how-to steps** for exercises, including a library of Planet Fitness machines.
+- **Body-figure diagrams and how-to steps** for exercises (form photos on request), including a library of Planet Fitness machines.
 
 > **Not included:** Apple Health sync and live machine data (Planet Fitness machines and Safari web apps
 > can't talk to each other). Your Strong history and everything you log here stays on the phone.
@@ -31,17 +31,18 @@ Importing the same file again is safe: it adds nothing twice.
 
 ## Using it
 
+The tabs match Strong: **Profile · History · Workout · Exercises**.
+
 | Tab | What it does |
 | --- | --- |
-| **Home** | "Up next" workout, warnings (behind this week, untrained muscles), stalled lifts, weekly review |
-| **Workout** | Start empty or from a routine. Targets show for every exercise. Rest timer starts when you tick a set |
-| **History** | Every workout, searchable. "Start again" or "Save as routine" from any of them |
-| **Progress** | Weekly muscle volume, records, exercise charts, plate calculator |
-| **Settings** | Units, bar & plates, week start, backup/restore, import |
+| **Profile** | Weekly chart, "best right now / work on this / best lift", muscle map, records, stalled lifts, weekly review. Gear → Settings |
+| **History** | Every workout (and skipped day 😢), searchable. "Start again" or "Save as template" from any of them |
+| **Workout** | Start an empty workout, your "Up next" suggestion (with **Skip 😢**), your templates, and example templates (Push, Pull, Legs, Shoulders, Upper, Lower, Arms) |
+| **Exercises** | The full library with body-figure diagrams, search, and Planet Fitness machines |
 
 Tips:
-- **Routines:** the quickest way to start is History → open a past workout → **Save as routine**.
-- **Rotation:** Workout → Manage → mark routines **In rotation**. Home then suggests the next one.
+- **Templates:** add an example (Push, Pull, Legs, Shoulders…) from the Workout tab, or open a past workout in History and choose **Save as template**.
+- **Rotation:** Workout → Manage → mark templates **In rotation**. "Up next" then suggests the next one. **Skip 😢** logs a skipped day (with an optional reason), moves the rotation on, and can be undone in History.
 - **Warm-ups & plates:** in a workout, tap an exercise's **⋯** → *Add warm-up sets* or *Plate calculator*.
 - Your workout in progress is saved as you go. Close the app, lock the phone, reopen: it's all still there.
 
@@ -50,8 +51,9 @@ Tips:
 - **Targets (double progression):** if every working set hit the top of the rep range at the same weight, add one weight step
   and go back to the bottom of the range. Otherwise keep the weight and add a rep to sets below the top.
   If average RPE was 9.5 or more, the weight stays.
-- **Weekly volume:** hard sets = completed working, drop and failure sets (not warm-ups). Primary muscle = 1 set, secondary = 0.5.
-  Default range is 10–20 sets per muscle per week; tap any muscle to change it.
+- **Weekly muscle volume:** hard sets = completed working, drop and failure sets (not warm-ups). Primary muscle = 1 set, secondary = 0.5.
+  Muscles show as *Not yet / Building / On track / High* (on track = 10–20 sets a week by default; tap a muscle to change it), compared with your own usual week.
+- **Insights:** *Best right now* is the muscle you've worked hardest relative to its target; *Work on this* is the one longest untrained while under target; *Best lift* is the biggest estimated-1RM gain in the last 8 weeks.
 - **Stalled lift:** no gain in top weight or estimated 1RM (Epley, sets of 12 reps or fewer) across the last 3 sessions.
 - **Fatigue signal:** only with RPE data. The same weight × reps feels 1+ RPE harder than two weeks ago on 2 or more lifts.
 

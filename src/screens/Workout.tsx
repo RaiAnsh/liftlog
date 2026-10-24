@@ -1,97 +1,83 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { useCoaching } from '../coaching/useCoaching'
+import SuggestionCard from '../components/coaching/SuggestionCard'
+import { ExampleSheet, TemplateCard, TemplateSheet } from '../components/Templates'
+import { Title } from '../components/PageHeader'
+import { EXAMPLE_TEMPLATES, type ExampleTemplate } from '../data/templates'
 import { db } from '../db/db'
 import { useSettings } from '../db/settings'
-import { Title } from '../components/PageHeader'
-import ExerciseThumb from '../components/ExerciseThumb'
-import { describeTarget, nextTarget } from '../coaching/targets'
-import { formatWeight } from '../units'
+import { nameKey } from '../db/exercises'
+import { emptyDraft } from '../workout/draft'
 import { getPreviousSets } from '../workout/previous'
-import { emptyDraft, startFromRoutine } from '../workout/draft'
 import { startDraft, useDraft } from '../workout/store'
+import type { Routine } from '../types'
 import ActiveWorkout from './ActiveWorkout'
 
 export default function Workout() {
   const draft = useDraft()
-  const nav = useNavigate()
   const { units, coachState } = useSettings()
-  const [open, setOpen] = useState<number | null>(null)
-  const data = useLiveQuery(async () => {
-    const routines = await db.routines.orderBy('order').toArray()
-    return {
-      routines,
-      ex: new Map((await db.exercises.toArray()).map((e) => [e.id!, e])),
-      prev: await getPreviousSets(routines.flatMap((r) => r.items.map((i) => i.exerciseId))),
-    }
-  })
+  const { h, c, settings } = useCoaching()
+  const [open, setOpen] = useState<Routine | null>(null)
+  const [example, setExample] = useState<ExampleTemplate | null>(null)
+  const prev = useLiveQuery(async () => {
+    const routines = await db.routines.toArray()
+    return getPreviousSets(routines.flatMap((r) => r.items.map((i) => i.exerciseId)))
+  }, [h?.routines])
 
   if (draft) return <ActiveWorkout draft={draft} />
-  if (!data) return <p className="text-mute">Loading…</p>
+  if (!h || !c || !prev) return <div className="space-y-3"><div className="skeleton h-12 w-52 rounded-xl" /><div className="skeleton h-14 rounded-2xl" /><div className="grid grid-cols-2 gap-3"><div className="skeleton h-32 rounded-2xl" /><div className="skeleton h-32 rounded-2xl" /></div></div>
+
+  const have = new Set(h.routines.map((r) => nameKey(r.name)))
+  const examples = EXAMPLE_TEMPLATES.filter((t) => !have.has(nameKey(t.name)))
+  const names = (r: Routine) => r.items.map((i) => h.exercises.get(i.exerciseId)?.name ?? 'Exercise')
 
   return (
     <div className="space-y-5">
-      <Title>Workout</Title>
-      <button className="btn btn-primary w-full !min-h-[56px] text-lg" onClick={() => startDraft(emptyDraft(Date.now()))}>Start empty workout</button>
+      <Title>Start Workout</Title>
 
-      <section className="space-y-3">
+      <section className="space-y-2">
+        <div className="label">Quick start</div>
+        <button className="btn btn-primary press w-full !min-h-[54px] text-[17px]" onClick={() => startDraft(emptyDraft(Date.now()))}>Start an Empty Workout</button>
+      </section>
+
+      {c.suggestion && h.workouts.length > 0 && <SuggestionCard s={c.suggestion} h={h} counts={c.counts} settings={settings} />}
+      {c.late && (
+        <Link to="/profile" className="rise card block border border-warn/40" style={{ ['--i' as string]: 1 }}>
+          <div className="text-sm font-bold text-warn">Heads up</div>
+          <div className="text-sm">{c.late.text}</div>
+        </Link>
+      )}
+
+      <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="label">Routines</span>
-          <span className="flex gap-4 text-sm">
-            <Link to="/routine/new" className="text-accent">+ New</Link>
+          <span className="label">My templates</span>
+          <span className="flex items-center gap-4 text-sm">
             <Link to="/routines" className="text-accent">Manage</Link>
+            <Link to="/routine/new" aria-label="New template" className="press flex h-8 w-8 items-center justify-center rounded-full bg-accent text-lg font-bold leading-none text-white">+</Link>
           </span>
         </div>
-        {data.routines.length === 0 && (
-          <div className="card text-mute">No routines yet. Create one, or open a past workout in History and tap “Save as routine”.</div>
-        )}
-        {data.routines.map((r) => (
-          <div key={r.id} className="card">
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <div className="truncate text-lg font-bold">{r.name}</div>
-                <div className="truncate text-sm text-mute">{r.items.length} exercises · {r.items.reduce((n, i) => n + i.targetSets, 0)} sets</div>
-              </div>
-              <button
-                className="btn btn-primary !min-h-[44px] px-5"
-                onClick={() => { startDraft(startFromRoutine(r, data.ex, Date.now())); nav('/workout') }}
-              >Start</button>
-            </div>
-            <div className="mt-3 flex -space-x-2 overflow-hidden">
-              {r.items.slice(0, 8).map((i, k) => {
-                const e = data.ex.get(i.exerciseId)
-                return <div key={k} className="rounded-xl ring-2 ring-card"><ExerciseThumb name={e?.name ?? '?'} muscle={e?.primaryMuscles[0]} size={34} /></div>
-              })}
-            </div>
-            <div className="mt-3 flex items-center justify-between text-sm">
-              <button className="text-accent" onClick={() => setOpen(open === r.id ? null : r.id!)}>{open === r.id ? 'Hide targets' : '🎯 Next-session targets'}</button>
-              <Link to={`/routine/${r.id}`} className="text-accent">Edit routine</Link>
-            </div>
-            {open === r.id && (
-              <div className="mt-3 space-y-3 border-t border-line pt-3">
-                {r.items.map((i, k) => {
-                  const e = data.ex.get(i.exerciseId)
-                  const t = e ? nextTarget(data.prev.get(i.exerciseId), {
-                    repMin: i.repRangeMin, repMax: i.repRangeMax, incrementKg: e.weightIncrement,
-                    fmt: (kg) => `${formatWeight(kg, units)} ${units}`, deload: i.exerciseId in coachState.deload,
-                  }) : null
-                  return (
-                    <div key={k}>
-                      <div className="text-[15px] font-semibold">{e?.name}</div>
-                      {t ? (
-                        <>
-                          <div className="num text-sm font-bold text-accent">{describeTarget(t, (kg) => `${formatWeight(kg, units)} ${units}`)}</div>
-                          <div className="text-xs text-mute">{t.reason}</div>
-                        </>
-                      ) : <div className="text-xs text-mute">No history yet. Log it once and a target appears.</div>}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
+        {h.routines.length === 0 ? (
+          <div className="card text-sm text-mute">No templates yet. Tap <b className="text-fg">+</b>, add one of the examples below, or open a past workout in History and choose “Save as template”.</div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {h.routines.map((r, i) => <TemplateCard key={r.id} index={i} title={r.name} lines={names(r)} extra={`${r.items.length} exercises · ${r.items.reduce((n, x) => n + x.targetSets, 0)} sets`} onClick={() => setOpen(r)} />)}
           </div>
-        ))}
+        )}
       </section>
+
+      {examples.length > 0 && (
+        <section className="space-y-2">
+          <div className="label">Example templates</div>
+          <div className="grid grid-cols-2 gap-3">
+            {examples.map((t, i) => <TemplateCard key={t.id} index={i} dashed title={t.name} lines={t.items.map((x) => x.name)} extra={t.blurb} onClick={() => setExample(t)} />)}
+          </div>
+        </section>
+      )}
+
+      {open && <TemplateSheet routine={open} exercises={h.exercises} prev={prev} units={units} deload={coachState.deload} onClose={() => setOpen(null)} />}
+      {example && <ExampleSheet tpl={example} exercises={h.exercises} units={units} onClose={() => setExample(null)} />}
     </div>
   )
 }

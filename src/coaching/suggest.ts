@@ -106,15 +106,18 @@ export function musclesAtRisk(r: Routine, counts: MuscleCounts, targets: Setting
     .sort((a, b) => (b.min - b.current) - (a.min - a.current))
 }
 
-/** "Skipping Legs leaves hamstrings at 4/10 sets this week." Null when nothing is at risk. */
+const setsPhrase = (m: Muscle, n: number) => (n <= 0 ? `${lc(m)} with no sets` : `${lc(m)} at just ${fmtSets(n)} set${n === 1 ? '' : 's'}`)
+
+/** "Skipping Legs leaves hamstrings at just 4 sets this week (10+ is a good week)." Null when nothing is at risk. */
 export function skipWarning(r: Routine, counts: MuscleCounts, targets: Settings['weeklyTargets'], exercises: Map<number, Exercise>) {
   const risk = musclesAtRisk(r, counts, targets, exercises)
   if (!risk.length) return null
-  const parts = risk.map((x) => `${lc(x.muscle)} at ${fmtSets(x.current)}/${x.min}`)
-  return { risk, text: `Skipping ${r.name} leaves ${joinList(parts)} sets this week.` }
+  const mins = new Set(risk.map((x) => x.min))
+  const hint = mins.size === 1 ? ` (${[...mins][0]}+ sets is a good week)` : ''
+  return { risk, text: `Skipping ${r.name} leaves ${joinList(risk.map((x) => setsPhrase(x.muscle, x.current)))} this week${hint}.` }
 }
 
-/** From the fifth day of the week on, list muscles still under their minimum. */
+/** From the fifth day of the week on, say which muscles haven't been trained or are still building. */
 export function lateWeekWarning(counts: MuscleCounts, targets: Settings['weeklyTargets'], now: number, startDay: 0 | 1) {
   if (daysIntoWeek(now, startDay) < 4) return null
   const under = MUSCLES.filter((m) => rangeFor(m, targets).max > 0 && counts[m] < rangeFor(m, targets).min)
@@ -122,8 +125,12 @@ export function lateWeekWarning(counts: MuscleCounts, targets: Settings['weeklyT
     .sort((a, b) => (b.min - b.current) - (a.min - a.current))
   if (!under.length) return null
   const day = new Date(now).toLocaleDateString(undefined, { weekday: 'long' })
-  const shown = under.slice(0, 4).map((x) => `${lc(x.muscle)} ${fmtSets(x.current)}/${x.min}`)
-  return { muscles: under, text: `It's ${day} and ${joinList(shown)} sets are under target this week.` }
+  const none = under.filter((x) => x.current <= 0).slice(0, 4)
+  const some = under.filter((x) => x.current > 0).slice(0, 3)
+  const parts: string[] = []
+  if (none.length) parts.push(`${joinList(none.map((x) => lc(x.muscle)))} ${none.length === 1 ? 'hasn’t' : 'haven’t'} been trained yet`)
+  if (some.length) parts.push(`${joinList(some.map((x) => `${lc(x.muscle)} (${fmtSets(x.current)} set${x.current === 1 ? '' : 's'})`))} ${some.length === 1 ? 'is' : 'are'} still building`)
+  return { muscles: under, text: `It’s ${day}: ${parts.join('; ')} this week.` }
 }
 
 export interface Stale { muscle: Muscle; days: number }

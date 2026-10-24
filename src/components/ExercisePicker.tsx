@@ -1,4 +1,5 @@
 import { useDeferredValue, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { db } from '../db/db'
 import { buildExercise } from '../db/exercises'
 import { useSettings } from '../db/settings'
@@ -43,7 +44,7 @@ export default function ExercisePicker({ multi, onPick, onClose }: { multi?: boo
   const toggle = (k: string) => (multi ? setChosen((c) => (c.includes(k) ? c.filter((x) => x !== k) : [...c, k])) : resolve([k]))
   const chips: [Filter, string][] = [['all', 'All'], ['pf', 'Planet Fitness'], ['mine', 'My exercises'], ...MUSCLES.map((m): [Filter, string] => [m, MUSCLE_LABELS[m]])]
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 mx-auto flex max-w-xl flex-col bg-bg" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="flex items-center justify-between px-4 py-3">
         <button className="min-h-[44px] pr-3 text-accent" onClick={onClose}>Cancel</button>
@@ -67,7 +68,7 @@ export default function ExercisePicker({ multi, onPick, onClose }: { multi?: boo
             return (
               <button key={i.key} onClick={() => toggle(i.key)}
                 className={`row-press flex w-full items-center gap-3 px-3 py-2.5 text-left ${idx ? 'border-t border-line' : ''} ${on ? 'bg-accent/15' : ''}`}>
-                <ExerciseThumb name={i.name} muscle={i.muscles[0]} size={44} />
+                <ExerciseThumb name={i.name} muscles={i.muscles} size={44} />
                 <div className="min-w-0 flex-1">
                   <div className="truncate font-medium">{i.name}</div>
                   <div className="truncate text-sm text-mute">{i.muscles.map((m) => MUSCLE_LABELS[m]).join(', ') || 'No muscles tagged'}</div>
@@ -87,6 +88,7 @@ export default function ExercisePicker({ multi, onPick, onClose }: { multi?: boo
           </button>
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   )
 }

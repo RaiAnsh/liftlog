@@ -6,6 +6,9 @@ import { sessionPoints, type SessionPoint } from '../lib/exerciseStats'
 import { useNow } from '../lib/useNow'
 import type { Exercise, Settings, WorkoutSet } from '../types'
 import { fatigueSignal } from './fatigue'
+import { computeHighlights, lastTrained } from './highlights'
+import { lastRotationSkip } from './skips'
+import { weeklyTotals } from './volume'
 import { detectPlateau, type Plateau } from './plateau'
 import { lateWeekWarning, staleMuscles, suggestNext } from './suggest'
 import type { History } from './types'
@@ -42,7 +45,10 @@ export function compute(h: History, s: Settings, now: number) {
   const usage = new Map([...byEx].map(([id, sets]) => [id, sets.length]))
   return {
     weekStart, counts, breakdown, plateaus, usage,
-    suggestion: suggestNext({ routines: h.routines, program: s.program, workouts: h.workouts, lastSkip: s.lastSkip, counts, targets: s.weeklyTargets, exercises: h.exercises }),
+    last: lastTrained(h.sets, h.workouts, h.exercises),
+    totals: weeklyTotals(h.sets, h.workouts, now, s.weekStartDay, 10),
+    highlights: computeHighlights({ breakdown, sets: h.sets, workouts: h.workouts, exercises: h.exercises, targets: s.weeklyTargets, now }),
+    suggestion: suggestNext({ routines: h.routines, program: s.program, workouts: h.workouts, lastSkip: lastRotationSkip(s.skipLog), counts, targets: s.weeklyTargets, exercises: h.exercises }),
     late: lateWeekWarning(counts, s.weeklyTargets, now, s.weekStartDay),
     stale: staleMuscles(h.sets, h.workouts, h.exercises, s.weeklyTargets, now),
     fatigue: fatigueSignal(h.sets, h.workouts, now),

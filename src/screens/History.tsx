@@ -1,7 +1,8 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useDeferredValue, useMemo, useState } from 'react'
 import { db } from '../db/db'
-import { useSettings } from '../db/settings'
+import { setSetting, useSettings } from '../db/settings'
+import { removeSkip } from '../coaching/skips'
 import { Title } from '../components/PageHeader'
 import { SearchIcon } from '../components/Icons'
 import WorkoutCard from '../components/WorkoutCard'
@@ -9,7 +10,7 @@ import WorkoutCard from '../components/WorkoutCard'
 const PAGE = 30
 
 export default function History() {
-  const { units } = useSettings()
+  const { units, skipLog } = useSettings()
   const [q, setQ] = useState('')
   const [limit, setLimit] = useState(PAGE)
   const dq = useDeferredValue(q)
@@ -34,7 +35,16 @@ export default function History() {
     )
   }, [data, dq])
 
-  if (!data) return <p className="text-mute">Loading…</p>
+  const skips = useMemo(() => {
+    const t = dq.trim().toLowerCase()
+    return [...skipLog].filter((x) => !t || x.name.toLowerCase().includes(t) || 'skipped'.includes(t)).sort((a, b) => b.at - a.at)
+  }, [skipLog, dq])
+  const timeline = useMemo(() => [
+    ...rows.map((w) => ({ kind: 'w' as const, at: w.startedAt, w })),
+    ...skips.map((x) => ({ kind: 's' as const, at: x.at, x })),
+  ].sort((a, b) => b.at - a.at), [rows, skips])
+
+  if (!data) return <div className="space-y-3">{[0, 1, 2].map((i) => <div key={i} className="skeleton h-40 rounded-2xl" />)}</div>
   return (
     <div className="space-y-3">
       <Title>History</Title>
@@ -45,11 +55,23 @@ export default function History() {
           className="w-full rounded-2xl bg-card py-3 pl-10 pr-4 outline-none placeholder:text-mute focus:ring-2 focus:ring-accent"
         />
       </div>
-      <div className="text-sm text-mute">{rows.length} workouts</div>
-      {rows.slice(0, limit).map((w) => (
-        <WorkoutCard key={w.id} workout={w} sets={data.per.get(w.id!) ?? []} exercises={data.exMap} units={units} />
+      <div className="text-sm text-mute">{rows.length} workouts{skips.length > 0 && <> · {skips.length} skipped 😢</>}</div>
+      {timeline.slice(0, limit).map((e, i) => e.kind === 'w' ? (
+        <div key={`w${e.w.id}`} className="rise" style={{ ['--i' as string]: Math.min(i, 6) }}>
+          <WorkoutCard workout={e.w} sets={data.per.get(e.w.id!) ?? []} exercises={data.exMap} units={units} />
+        </div>
+      ) : (
+        <div key={`s${e.x.id}`} className="rise card flex items-center gap-3 !bg-card/60" style={{ ['--i' as string]: Math.min(i, 6) }}>
+          <span className="text-3xl" aria-hidden>😢</span>
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold">Skipped {e.x.name}</div>
+            <div className="text-sm text-mute">{new Date(e.x.at).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}{e.x.reason ? ` · ${e.x.reason}` : ''}</div>
+          </div>
+          <button className="press rounded-lg px-3 py-2 text-sm font-semibold text-accent" onClick={() => setSetting('skipLog', removeSkip(skipLog, e.x.id))}>Undo</button>
+        </div>
       ))}
-      {rows.length > limit && <button className="btn w-full" onClick={() => setLimit(limit + PAGE)}>Show more</button>}
+      {timeline.length > limit && <button className="btn w-full" onClick={() => setLimit(limit + PAGE)}>Show more</button>}
+      {timeline.length === 0 && <div className="card text-center text-mute">Nothing here yet.</div>}
     </div>
   )
 }

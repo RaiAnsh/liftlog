@@ -1,6 +1,6 @@
 import { sessionPoints } from '../lib/exerciseStats'
 import { prTimeline } from '../lib/prs'
-import type { Muscle, Settings } from '../types'
+import type { Muscle, Settings, SkipEntry } from '../types'
 import { MUSCLES } from '../types'
 import { detectPlateau } from './plateau'
 import type { History } from './types'
@@ -15,10 +15,11 @@ export interface WeekSummary {
   over: Muscle[]
   prs: number
   stalled: number[]
+  skipped: number
 }
 
 /** The end-of-week card: what got done, where volume landed, records, and stalled lifts. */
-export function weeklySummary(h: History, weekStart: number, targets: Settings['weeklyTargets'], now: number): WeekSummary {
+export function weeklySummary(h: History, weekStart: number, targets: Settings['weeklyTargets'], now: number, skipLog: SkipEntry[] = []): WeekSummary {
   const end = addDays(weekStart, 7)
   const wks = h.workouts.filter((w) => w.startedAt >= weekStart && w.startedAt < end)
   const ids = new Set(wks.map((w) => w.id!))
@@ -43,6 +44,6 @@ export function weeklySummary(h: History, weekStart: number, targets: Settings['
     inRange: status.filter((x) => statusOf(x.c, x.r) === 'in').map((x) => x.m),
     under: status.filter((x) => statusOf(x.c, x.r) === 'under').map((x) => ({ muscle: x.m, current: x.c, min: x.r.min })),
     over: status.filter((x) => statusOf(x.c, x.r) === 'over').map((x) => x.m),
-    prs, stalled,
+    prs, stalled, skipped: skipLog.filter((x) => x.at >= weekStart && x.at < end).length,
   }
 }

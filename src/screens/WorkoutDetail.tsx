@@ -105,7 +105,7 @@ export default function WorkoutDetail() {
         return (
           <div key={g.exerciseId} className="card">
             <Link to={`/exercise/${encodeURIComponent(ex?.nameKey ?? '')}`} className="mb-3 flex items-center gap-3">
-              <ExerciseThumb name={ex?.name ?? '?'} muscle={ex?.primaryMuscles[0]} size={44} />
+              <ExerciseThumb name={ex?.name ?? '?'} muscles={ex?.primaryMuscles} secondary={ex?.secondaryMuscles} size={44} />
               <span className="flex-1 font-semibold text-accent">{ex?.name}</span>
             </Link>
             <div className="label mb-1 grid grid-cols-[36px_1fr_auto] px-1"><span>Set</span><span>Weight × reps</span><span>RPE</span></div>
@@ -125,7 +125,7 @@ export default function WorkoutDetail() {
       })}
       <div className="grid grid-cols-2 gap-3">
         <button className="btn btn-primary" onClick={again}>Start again</button>
-        <button className="btn" onClick={saveAsRoutine}>Save as routine</button>
+        <button className="btn" onClick={saveAsRoutine}>Save as template</button>
       </div>
       <button className="btn btn-danger w-full" onClick={remove}>Delete workout</button>
     </div>

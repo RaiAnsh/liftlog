@@ -60,3 +60,26 @@ export function weeklyBreakdown(
 }
 
 export const fmtSets = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1))
+
+export type Level = 'none' | 'low' | 'good' | 'high'
+
+/** Plain-language volume level. Replaces "x/10": 0 sets is "Not yet", under the minimum is "Building". */
+export const levelOf = (count: number, r: Range): Level => (count <= 0 ? 'none' : count < r.min ? 'low' : count > r.max ? 'high' : 'good')
+export const LEVEL_LABEL: Record<Level, string> = { none: 'Not yet', low: 'Building', good: 'On track', high: 'High' }
+
+export interface WeekTotals { weekStart: number; workouts: number; sets: number; volumeKg: number }
+
+/** Workouts, hard sets and total volume per week for the last `weeks` weeks (oldest first). */
+export function weeklyTotals(sets: WorkoutSet[], workouts: Workout[], now: number, startDay: 0 | 1, weeks: number): WeekTotals[] {
+  const current = weekStartOf(now, startDay)
+  const byWorkout = new Map<number, WorkoutSet[]>()
+  for (const s of sets) if (s.completed && s.type !== 'warmup') (byWorkout.get(s.workoutId) ?? byWorkout.set(s.workoutId, []).get(s.workoutId)!).push(s)
+  return Array.from({ length: weeks }, (_, i) => {
+    const weekStart = addDays(current, -7 * (weeks - 1 - i))
+    const end = addDays(weekStart, 7)
+    const wks = workouts.filter((w) => w.startedAt >= weekStart && w.startedAt < end)
+    let n = 0, vol = 0
+    for (const w of wks) for (const s of byWorkout.get(w.id!) ?? []) { n++; vol += s.weightKg * s.reps }
+    return { weekStart, workouts: wks.length, sets: n, volumeKg: vol }
+  })
+}

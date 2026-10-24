@@ -172,7 +172,7 @@ describe('next workout suggestion and warnings', () => {
     const counts = emptyCounts()
     counts.hamstrings = 4; counts.quads = 12
     const w = skipWarning(legs, counts, targets, exMap)!
-    expect(w.text).toBe('Skipping Legs leaves hamstrings at 4/10 sets this week.')
+    expect(w.text).toBe('Skipping Legs leaves hamstrings at just 4 sets this week (10+ sets is a good week).')
     expect(w.risk.map((r) => r.muscle)).toEqual(['hamstrings'])
     counts.hamstrings = 10
     expect(skipWarning(legs, counts, targets, exMap)).toBeNull()
@@ -180,8 +180,8 @@ describe('next workout suggestion and warnings', () => {
   it('joins several at-risk muscles and honours custom targets', () => {
     const counts = emptyCounts()
     counts.hamstrings = 4; counts.quads = 6
-    expect(skipWarning(legs, counts, {}, exMap)!.text).toBe('Skipping Legs leaves hamstrings at 4/10 and quads at 6/10 sets this week.')
-    expect(skipWarning(legs, counts, { hamstrings: { min: 3, max: 8 } }, exMap)!.text).toBe('Skipping Legs leaves quads at 6/10 sets this week.')
+    expect(skipWarning(legs, counts, {}, exMap)!.text).toBe('Skipping Legs leaves hamstrings at just 4 sets and quads at just 6 sets this week (10+ sets is a good week).')
+    expect(skipWarning(legs, counts, { hamstrings: { min: 3, max: 8 } }, exMap)!.text).toBe('Skipping Legs leaves quads at just 6 sets this week (10+ sets is a good week).')
   })
   it('flags under-target muscles late in the week only', () => {
     const counts = Object.fromEntries(Object.keys(emptyCounts()).map((m) => [m, 12])) as ReturnType<typeof emptyCounts>
@@ -189,7 +189,7 @@ describe('next workout suggestion and warnings', () => {
     expect(lateWeekWarning(counts, targets, mon + 2 * DAY, 1)).toBeNull() // Wednesday
     const late = lateWeekWarning(counts, { quads: { min: 0, max: 0 } }, mon + 4 * DAY + 3600_000, 1)! // Friday
     expect(late.muscles).toEqual([{ muscle: 'hamstrings', current: 4, min: 10 }])
-    expect(late.text).toContain('hamstrings 4/10')
+    expect(late.text).toBe('It’s Friday: hamstrings (4 sets) is still building this week.')
     expect(late.text).not.toContain('quads')
   })
   it('flags muscles untouched for 8+ days, but not stale-forever ones', () => {
@@ -272,5 +272,108 @@ describe('weekly summary', () => {
     expect(sum.prs).toBe(1)
     expect(sum.inRange).toContain('chest')
     expect(sum.under.map((u) => u.muscle)).toContain('quads')
+  })
+})
+
+import { computeHighlights, lastTrained } from './highlights'
+import { levelOf, weeklyTotals } from './volume'
+import { lastRotationSkip, newSkip, removeSkip, skipsBetween } from './skips'
+
+describe('plain-language levels', () => {
+  it('maps counts to words instead of x/10', () => {
+    const r = { min: 10, max: 20 }
+    expect([levelOf(0, r), levelOf(4, r), levelOf(10, r), levelOf(20, r), levelOf(21, r)]).toEqual(['none', 'low', 'good', 'good', 'high'])
+  })
+})
+
+describe('weekly totals', () => {
+  it('counts workouts, hard sets and volume per week, oldest first', () => {
+    const workouts = [wk(1, 0), wk(2, 2), wk(3, -3)]
+    const sets = [...set(1, 1, 3, { weightKg: 10, reps: 10 }), ...set(1, 1, 2, { type: 'warmup' }), ...set(2, 1, 2, { weightKg: 20, reps: 5 }), ...set(3, 1, 4, { weightKg: 10, reps: 10 })]
+    const t = weeklyTotals(sets, workouts, mon + 3 * DAY, 1, 3)
+    expect(t).toHaveLength(3)
+    expect(t[2]).toMatchObject({ weekStart: mon, workouts: 2, sets: 5, volumeKg: 3 * 100 + 2 * 100 })
+    expect(t[1]).toMatchObject({ workouts: 1, sets: 4, volumeKg: 400 })
+    expect(t[0].workouts).toBe(0)
+  })
+})
+
+describe('skip log', () => {
+  it('finds the latest routine skip, ignores skips without a routine, and can undo one', () => {
+    const a = newSkip('Push', 1, 'Tired', 100)
+    const b = newSkip('Pull', 2, null, 200)
+    const c = newSkip('Rest', null, null, 300)
+    expect(lastRotationSkip([a, b, c])).toEqual({ routineId: 2, at: 200 })
+    expect(lastRotationSkip([])).toBeNull()
+    expect(removeSkip([a, b, c], b.id).map((s) => s.name)).toEqual(['Push', 'Rest'])
+    expect(skipsBetween([a, b, c], 150, 350)).toHaveLength(2)
+  })
+  it('a skip moves the rotation on', () => {
+    const push: Routine = { id: 1, name: 'Push', order: 0, items: [] }
+    const pull: Routine = { id: 2, name: 'Pull', order: 1, items: [] }
+    const skip = lastRotationSkip([newSkip('Push', 1, null, mon + DAY)])
+    expect(nextInRotation([push, pull], [], [push, pull], skip)?.routine.name).toBe('Pull')
+  })
+})
+
+describe('highlights (best / improve / lift)', () => {
+  const now = mon + 4 * DAY
+  const mkWeeks = (cur: Partial<Record<Muscle, number>>, prev: Partial<Record<Muscle, number>> = {}) => {
+    const w = (c: Partial<Record<Muscle, number>>, i: number) => ({ weekStart: mon + (i - 3) * 7 * DAY, counts: { ...emptyCounts(), ...c } })
+    return [w({}, 0), w({}, 1), w(prev, 2), w(cur, 3)]
+  }
+
+  it('names the strongest muscle relative to its target, with your usual for context', () => {
+    const breakdown = mkWeeks({ chest: 12, biceps: 8, quads: 4 })
+    breakdown[1].counts.chest = 6; breakdown[2].counts.chest = 6
+    const h = computeHighlights({ breakdown, sets: [], workouts: [], exercises: exMap, targets: {}, now })
+    expect(h.best).toMatchObject({ muscle: 'chest' })
+    expect(h.best!.detail).toBe('12 sets this week, your usual is 4')
+    expect(h.periodLabel).toBe('this week')
+  })
+  it('falls back to last week early in the week when little is logged', () => {
+    const breakdown = mkWeeks({ chest: 1 }, { biceps: 12, chest: 3 })
+    const h = computeHighlights({ breakdown, sets: [], workouts: [], exercises: exMap, targets: {}, now })
+    expect(h.periodLabel).toBe('last week')
+    expect(h.best?.muscle).toBe('biceps')
+  })
+  it('picks the longest-untrained muscle that is under target, and skips ones dropped long ago', () => {
+    const workouts = [wk(1, -40, 'Old'), wk(2, -3, 'Recent'), wk(3, -300, 'Ancient')]
+    const sets = [...set(1, 1, 3), ...set(2, 2, 3), ...set(3, 3, 3)]
+    const breakdown = mkWeeks({ upper_back_lats: 10 })
+    const h = computeHighlights({ breakdown, sets, workouts, exercises: exMap, targets: {}, now })
+    expect(h.improve?.muscle).toBe('chest')
+    expect(h.improve?.detail).toMatch(/Not trained in \d+ days/)
+    expect(lastTrained(sets, workouts, exMap).has('quads')).toBe(true)
+  })
+  it('finds the lift whose estimated 1RM rose most in 8 weeks, and ignores tiny or stale changes', () => {
+    const workouts = [wk(1, -30, 'a'), wk(2, -2, 'b'), wk(3, -29, 'c'), wk(4, -1, 'd')]
+    const sets = [
+      ...set(1, 1, 1, { weightKg: 50, reps: 10 }), ...set(2, 1, 1, { weightKg: 60, reps: 10 }), // +20%
+      ...set(3, 2, 1, { weightKg: 50, reps: 10 }), ...set(4, 2, 1, { weightKg: 50.5, reps: 10 }), // +1%: ignored
+    ]
+    const h = computeHighlights({ breakdown: mkWeeks({}), sets, workouts, exercises: exMap, targets: {}, now })
+    expect(h.lift?.exerciseId).toBe(1)
+    expect(Math.round(h.lift!.pct * 100)).toBe(20)
+    const none = computeHighlights({ breakdown: mkWeeks({}), sets: sets.slice(2), workouts, exercises: exMap, targets: {}, now })
+    expect(none.lift).toBeNull()
+  })
+})
+
+describe('plain-language warnings', () => {
+  const item = (exerciseId: number, targetSets = 3) => ({ exerciseId, targetSets, repRangeMin: 8, repRangeMax: 12, restSeconds: 90, notes: '' })
+  const push: Routine = { id: 1, name: 'Push', order: 0, items: [item(1)] }
+  it('says "no sets" instead of 0/10, and singular for one set', () => {
+    const counts = emptyCounts()
+    expect(skipWarning(push, counts, {}, exMap)!.text).toBe('Skipping Push leaves chest with no sets this week (10+ sets is a good week).')
+    counts.chest = 1
+    expect(skipWarning(push, counts, {}, exMap)!.text).toBe('Skipping Push leaves chest at just 1 set this week (10+ sets is a good week).')
+  })
+  it('late-week text separates untouched muscles from ones still building, with no x/10', () => {
+    const all = Object.fromEntries(Object.keys(emptyCounts()).map((m) => [m, 12])) as ReturnType<typeof emptyCounts>
+    all.chest = 0; all.hamstrings = 1; all.quads = 6
+    const w = lateWeekWarning(all, {}, mon + 4 * DAY + 3600_000, 1)!
+    expect(w.text).toBe('It’s Friday: chest hasn’t been trained yet; quads (6 sets) and hamstrings (1 set) are still building this week.'.replace('quads (6 sets) and hamstrings (1 set)', 'hamstrings (1 set) and quads (6 sets)'))
+    expect(w.text).not.toMatch(/\d+\/\d+/)
   })
 })

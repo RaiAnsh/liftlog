@@ -96,9 +96,18 @@ export interface Settings {
   installedAt: number | null
   /** routine ids in your rotation; empty means every routine, in routine order */
   program: number[]
-  /** most recent "skip" of a suggested workout, so the rotation moves on */
-  lastSkip: { routineId: number; at: number } | null
+  /** workouts you chose to skip, newest last */
+  skipLog: SkipEntry[]
   coachState: CoachState
+}
+
+export interface SkipEntry {
+  id: string
+  /** epoch ms */
+  at: number
+  routineId: number | null
+  name: string
+  reason: string | null
 }
 
 export interface CoachState {
@@ -119,7 +128,7 @@ export const DEFAULT_SETTINGS: Settings = {
   lastBackupAt: null,
   installedAt: null,
   program: [],
-  lastSkip: null,
+  skipLog: [],
   coachState: { deload: {}, dismissed: {} },
 }
 

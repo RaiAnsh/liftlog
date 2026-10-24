@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { setSetting, useSettings } from '../db/settings'
-import { Title } from '../components/PageHeader'
+import { BackBar, Title } from '../components/PageHeader'
 import { ChevronRight } from '../components/Icons'
 import BackupSection from '../components/BackupSection'
 import InstallHint from '../components/InstallHint'
@@ -28,6 +28,7 @@ export default function Settings() {
   const s = useSettings()
   return (
     <div className="space-y-5">
+      <BackBar />
       <Title>Settings</Title>
       <InstallHint />
       <BackupSection />
@@ -71,7 +72,7 @@ export default function Settings() {
         <div className="overflow-hidden rounded-2xl bg-card">
           <LinkRow to="/import">Import from Strong</LinkRow>
           <LinkRow to="/tags">Review muscle tags</LinkRow>
-          <LinkRow to="/routines">Routines &amp; rotation</LinkRow>
+          <LinkRow to="/routines">Templates &amp; rotation</LinkRow>
           <LinkRow to="/exercises">Exercise library</LinkRow>
           <LinkRow to="/plates">Plate calculator</LinkRow>
         </div>

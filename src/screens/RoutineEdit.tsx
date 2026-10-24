@@ -45,7 +45,7 @@ export default function RoutineEdit() {
   })
 
   async function save() {
-    const clean = name.trim() || 'New routine'
+    const clean = name.trim() || 'New template'
     if (isNew) {
       const last = await db.routines.orderBy('order').last()
       await db.routines.add({ name: clean, items, order: (last?.order ?? -1) + 1 })
@@ -61,16 +61,16 @@ export default function RoutineEdit() {
   return (
     <div className="space-y-3">
       <BackBar />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Routine name" aria-label="Routine name"
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Template name" aria-label="Template name"
         className="w-full bg-transparent text-[30px] font-extrabold tracking-tight outline-none placeholder:text-mute/50" />
 
-      {items.length === 0 && <div className="card text-center text-mute">Add exercises to build this routine.</div>}
+      {items.length === 0 && <div className="card text-center text-mute">Add exercises to build this template.</div>}
       {items.map((it, i) => {
         const e = exMap.get(it.exerciseId)
         return (
           <div key={i} className="card space-y-3">
             <div className="flex items-center gap-3">
-              <ExerciseThumb name={e?.name ?? '?'} muscle={e?.primaryMuscles[0]} size={44} />
+              <ExerciseThumb name={e?.name ?? '?'} muscles={e?.primaryMuscles} secondary={e?.secondaryMuscles} size={44} />
               <div className="min-w-0 flex-1 truncate text-[17px] font-bold">{e?.name ?? 'Unknown exercise'}</div>
             </div>
             <div className="flex gap-2">
@@ -91,7 +91,7 @@ export default function RoutineEdit() {
       })}
 
       <button className="btn w-full" onClick={() => setAdding(true)}>+ Add exercise</button>
-      <button className="btn btn-primary w-full" onClick={save}>Save routine</button>
+      <button className="btn btn-primary w-full" onClick={save}>Save template</button>
 
       {adding && (
         <ExercisePicker multi onClose={() => setAdding(false)} onPick={(list) => {

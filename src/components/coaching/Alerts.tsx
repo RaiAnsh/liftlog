@@ -17,7 +17,7 @@ export default function Alerts({ c, h, settings }: { c: C; h: History; settings:
         <div className="card border border-warn/40">
           <div className="font-bold text-warn">Behind this week</div>
           <p className="mt-1 text-sm">{c.late.text}</p>
-          <Link to="/progress" className="mt-2 inline-block text-sm text-accent">See weekly volume →</Link>
+          <Link to="/profile" className="mt-2 inline-block text-sm text-accent">See your muscle map →</Link>
         </div>
       )}
       {c.stale.length > 0 && (

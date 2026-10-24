@@ -35,7 +35,7 @@ export default function WorkoutCard({
           const best = bestSet(g.sets)
           return (
             <div key={g.exerciseId} className="flex items-center gap-3">
-              <ExerciseThumb name={ex?.name ?? '?'} muscle={ex?.primaryMuscles[0]} size={40} />
+              <ExerciseThumb name={ex?.name ?? '?'} muscles={ex?.primaryMuscles} secondary={ex?.secondaryMuscles} size={40} />
               <div className="min-w-0 flex-1 truncate text-[15px]">
                 <span className="text-mute">{g.sets.filter(isHard).length} × </span>{ex?.name}
               </div>

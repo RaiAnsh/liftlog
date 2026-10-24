@@ -78,7 +78,7 @@ function SetRow({ ex, set, index, prev, units, bests, target }: { ex: DraftExerc
 
   return (
     <>
-      <div className={`num grid ${cols} items-center gap-1.5 rounded-xl px-1 py-1 transition-colors ${set.completed ? 'bg-good/15' : ''}`}>
+      <div className={`num grid ${cols} items-center gap-1.5 rounded-xl px-1 py-1 transition-colors ${set.completed ? 'row-flash bg-good/15' : ''}`}>
         <button onClick={() => setMenu(true)} className={`h-11 font-bold ${tag.cls || 'text-mute'}`} aria-label="Set options">{tag.tag || number}</button>
         <button
           className="truncate text-left text-sm text-mute"
@@ -92,7 +92,7 @@ function SetRow({ ex, set, index, prev, units, bests, target }: { ex: DraftExerc
           onCommit={(v) => patch({ reps: v })} />
         {ex.showRpe && <NumInput value={set.rpe} placeholder="RPE" mode="decimal" onCommit={(v) => patch({ rpe: v })} />}
         <button onClick={check} aria-label={set.completed ? 'Mark incomplete' : 'Complete set'}
-          className={`flex h-11 items-center justify-center rounded-lg text-xl font-bold transition active:scale-95 ${set.completed ? 'bg-good text-white' : 'bg-card2 text-mute'} ${hit ? 'ring-2 ring-good/60 ring-offset-2 ring-offset-card' : ''}`}>{hit ? '✓✓' : '✓'}</button>
+          key={String(set.completed)} className={`flex h-11 items-center justify-center rounded-lg text-xl font-bold transition active:scale-95 ${set.completed ? 'pop bg-good text-white' : 'bg-card2 text-mute'} ${hit ? 'ring-2 ring-good/60 ring-offset-2 ring-offset-card' : ''}`}>{hit ? '✓✓' : '✓'}</button>
       </div>
       {menu && (
         <Sheet title="Set type" onClose={() => setMenu(false)}>
@@ -120,7 +120,7 @@ function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests
   return (
     <div className={`card ${supersetLabel ? 'border-l-4 border-accent' : ''}`}>
       <div className="mb-2 flex items-center gap-3">
-        <ExerciseThumb name={name} muscle={def?.primaryMuscles[0]} size={46} />
+        <ExerciseThumb name={name} muscles={def?.primaryMuscles} secondary={def?.secondaryMuscles} size={46} />
         <button className="min-w-0 flex-1 text-left" onClick={() => setMenu(true)}>
           <div className="truncate text-[17px] font-bold text-accent">{name}</div>
           <div className="truncate text-xs text-mute">

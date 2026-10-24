@@ -30,10 +30,10 @@ export default function Routines() {
   return (
     <div className="space-y-3">
       <BackBar />
-      <Title sub="Create as many as you like">Routines</Title>
-      <p className="text-sm text-mute">Routines marked “In rotation” are suggested one after another, in the order below.</p>
+      <Title sub="Create as many as you like">Templates</Title>
+      <p className="text-sm text-mute">Templates marked “In rotation” are suggested one after another, in the order below.</p>
       <Link to="/routine/new" className="btn btn-primary flex items-center justify-center">+ New routine</Link>
-      {list.length === 0 && <div className="card text-mute">No routines yet.</div>}
+      {list.length === 0 && <div className="card text-mute">No templates yet.</div>}
       {list.map((r, i) => (
         <div key={r.id} className="card space-y-3">
           <div>
