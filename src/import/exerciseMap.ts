@@ -22,7 +22,7 @@ const RULES: Rule[] = [
   r(/back extension|hyperextension|good morning/, ['lower_back'], ['glutes', 'hamstrings']),
   r(/romanian|stiff.?leg/, ['hamstrings'], ['glutes', 'lower_back']),
   r(/deadlift/, ['hamstrings', 'glutes', 'lower_back'], ['traps', 'forearms', 'quads']),
-  r(/hip thrust|glute|bridge|kickback|hip abduct/, ['glutes'], ['hamstrings']),
+  r(/hip thrust|glute|bridge|kickback|hip (abduct|adduct)|thigh (abduct|adduct)/, ['glutes'], ['hamstrings']),
   r(/calf|calves/, ['calves']),
   r(/leg extension/, ['quads']),
   r(/squat|leg press|lunge|step.?up/, ['quads'], ['glutes', 'hamstrings']),

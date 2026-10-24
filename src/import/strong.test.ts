@@ -118,7 +118,7 @@ describe('exercise muscle map', () => {
     ['Lying Leg Curl (Machine)', 'hamstrings'], ['Bicep Curl (Dumbbell)', 'biceps'],
     ['Calf Press on Seated Leg Press', 'calves'], ['Incline Row (Dumbbell)', 'upper_back_lats'],
     ['Lat Pulldown (Cable)', 'upper_back_lats'], ['Hack Squat', 'quads'], ['Pec Deck (Machine)', 'chest'],
-    ['rear deltoids (cable)', 'rear_delts'], ['Strict Military Press (Barbell)', 'front_delts'],
+    ['rear deltoids (cable)', 'rear_delts'], ['Strict Military Press (Barbell)', 'front_delts'], ['Hip Adductor (Machine)', 'glutes'], ['Hip Abductor (Machine)', 'glutes'],
     ['Triceps Pushdown (Cable - Straight Bar)', 'triceps'], ['Skullcrusher (Dumbbell)', 'triceps'],
   ])('%s -> %s', (name, muscle) => expect(guessMuscles(name).primary).toContain(muscle))
 })
