@@ -1,0 +1,16 @@
+Date,Workout Name,Duration,Exercise Name,Set Order,Weight,Reps,Distance,Seconds,Notes,Workout Notes,RPE
+2024-03-04 18:00:00,"Push Day",1h 5min,"Bench Press (Barbell)",W,45.0,10.0,0,0.0,"","Felt good, strong",
+2024-03-04 18:00:00,"Push Day",1h 5min,"Bench Press (Barbell)",1,135.0,8.0,0,0.0,"",,8
+2024-03-04 18:00:00,"Push Day",1h 5min,"Bench Press (Barbell)",2,135.0,7.0,0,0.0,"grip was wide, left
+shoulder tight",,
+2024-03-04 18:00:00,"Push Day",1h 5min,"Bench Press (Barbell)",Rest Timer,0,0.0,0,120.0,,,
+2024-03-04 18:00:00,"Push Day",1h 5min,"Triceps Pushdown (Cable - Straight Bar)",1,50.0,12.0,0,0.0,,,
+2024-03-04 18:00:00,"Push Day",1h 5min,"Triceps Pushdown (Cable - Straight Bar)",D,30.0,10.0,0,0.0,,,
+2024-03-04 18:00:00,"Push Day",1h 5min,"Triceps Pushdown (Cable - Straight Bar)",F,30.0,6.0,0,0.0,,,
+2024-03-04 18:00:00,"Push Day",1h 5min,"Mystery Gadget Thing",X,20.0,10.0,0,0.0,,,
+2024-03-04 18:00:00,"Push Day",1h 5min,"Bench Press (Barbell)",1,135.0,6.0,0,0.0,"second time same exercise",,
+2024-03-06 07:30:00,"Legs",45min,"Squat (Smith Machine)",1,100.0,10.0,0,0.0,,,
+2024-03-06 07:30:00,"Legs",45min,"Running (Treadmill)",1,0,0.0,0,600.0,,,
+2024-03-06 07:30:00,"Legs",45min,"Leg Press",1,0,0.0,0,0.0,,,
+2024-03-08 10:00:00,"Pull",167h 45min,"Lat Pulldown (Cable)",1,90.0,12.0,0,0.0,,,
+bad-date,"Pull",30min,"Lat Pulldown (Cable)",1,90.0,12.0,0,0.0,,,

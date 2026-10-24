@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: 242 243 247; --card: 255 255 255; --card2: 240 241 245; --line: 226 228 234;
+  --fg: 17 19 24; --mute: 120 126 138; --accent: 10 132 255; --good: 34 170 90; --warn: 230 160 20;
+}
+.dark {
+  --bg: 8 9 11; --card: 22 24 28; --card2: 32 35 41; --line: 40 43 50;
+  --fg: 240 242 246; --mute: 135 142 155; --accent: 10 132 255; --good: 52 199 110; --warn: 255 184 40;
+}
+
+html { -webkit-text-size-adjust: 100%; background: rgb(var(--bg)); }
+* { touch-action: manipulation; }
+button, a, nav { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+body {
+  @apply bg-bg text-fg antialiased;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  padding-top: env(safe-area-inset-top);
+  overscroll-behavior-y: none;
+}
+input, select, textarea { font-size: 16px; }
+.num { font-variant-numeric: tabular-nums; }
+
+.btn { @apply rounded-2xl px-4 text-base font-semibold bg-card2 text-fg active:scale-[0.98] active:opacity-80 transition; min-height: 48px; }
+.btn-primary { @apply bg-accent text-white; }
+.btn-danger { @apply text-red-500; }
+.card { @apply rounded-2xl bg-card p-4; }
+.chip { @apply rounded-full bg-card2 px-3.5 text-sm font-medium text-mute whitespace-nowrap; min-height: 36px; }
+.chip-on { @apply bg-accent text-white; }
+.label { @apply text-xs font-semibold uppercase tracking-wider text-mute; }
+.row-press { @apply active:bg-card2 transition-colors; }
+.scroll-x { overflow-x: auto; scrollbar-width: none; }
+.scroll-x::-webkit-scrollbar { display: none; }
+
+@keyframes toast-in { from { transform: translateY(-16px) scale(.96); opacity: 0 } to { transform: none; opacity: 1 } }
+.toast-in { animation: toast-in .25s ease-out; }

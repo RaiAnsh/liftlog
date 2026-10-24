@@ -1,0 +1,8 @@
+node_modules
+dist
+dev-dist
+sample-data/
+*.local
+.DS_Store
+.claude/settings.local.json
+*.tsbuildinfo
