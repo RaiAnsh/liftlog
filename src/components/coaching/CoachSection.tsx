@@ -54,7 +54,7 @@ export default function CoachSection({ h, settings, now }: { h: History; setting
           <div className="flex flex-wrap gap-1.5">
             {prio.length ? prio.map((m) => <span key={m} className="chip chip-on flex items-center !min-h-[28px] text-xs">{MUSCLE_LABELS[m]}</span>) : <span className="text-sm text-mute">Every muscle gets steady volume ({TIER_RANGE.standard.min}–{TIER_RANGE.standard.max} sets a week).</span>}
           </div>
-        ) : <p className="text-sm text-mute">Tell ARLog what you want to build and it tunes your weekly sets and suggestions.</p>}
+        ) : <p className="text-sm text-mute">Tell LiftLog what you want to build and it tunes your weekly sets and suggestions.</p>}
       </div>
 
       {!review ? (

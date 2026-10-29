@@ -63,7 +63,7 @@ export default function Profile() {
 
       {h.workouts.length === 0 && (
         <div className="card space-y-3 text-center">
-          <p className="text-lg font-semibold">Welcome to ARLog</p>
+          <p className="text-lg font-semibold">Welcome to LiftLog</p>
           <p className="text-mute">Bring your history over from Strong to see your stats here.</p>
           <Link to="/import" className="btn btn-primary flex items-center justify-center">Import Strong CSV</Link>
         </div>
@@ -142,7 +142,7 @@ export default function Profile() {
       <section className="space-y-2">
         <div className="label">Tools</div>
         <div className="overflow-hidden rounded-2xl bg-card">
-          {[['/science', 'The science behind ARLog'], ['/plates', 'Plate calculator'], ['/routines', 'Manage templates & rotation'], ['/tags', 'Review muscle tags'], ['/settings', 'Settings, backup & import']].map(([to, label], i) => (
+          {[['/science', 'The science behind LiftLog'], ['/plates', 'Plate calculator'], ['/routines', 'Manage templates & rotation'], ['/tags', 'Review muscle tags'], ['/settings', 'Settings, backup & import']].map(([to, label], i) => (
             <Link key={to} to={to} className={`row-press flex items-center justify-between px-4 py-3.5 ${i ? 'border-t border-line' : ''}`}><span>{label}</span><span className="text-mute"><ChevronRight /></span></Link>
           ))}
         </div>

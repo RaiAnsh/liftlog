@@ -18,7 +18,7 @@ export function strongDuration(startedAt: number, endedAt: number | null): strin
 
 /**
  * Workouts in Strong's CSV layout (the same one the importer reads), so the data can move to other apps
- * or back into ARLog. Numbered sets are 1, 2, 3…; warm-ups, drop sets and failure sets use W, D and F.
+ * or back into LiftLog. Numbered sets are 1, 2, 3…; warm-ups, drop sets and failure sets use W, D and F.
  * Weights are written in the unit you choose, and Strong-format files don't say which, so keep it in the name.
  */
 export function exportStrongCsv(workouts: Workout[], sets: WorkoutSet[], exercises: Map<number, Exercise>, unit: Unit): string {
@@ -46,4 +46,4 @@ export function exportStrongCsv(workouts: Workout[], sets: WorkoutSet[], exercis
   return Papa.unparse({ fields: HEADER, data: rows }, { newline: '\n' })
 }
 
-export const strongCsvFilename = (unit: Unit, now = Date.now()) => `arlog-strong-format-${unit}-${new Date(now).toISOString().slice(0, 10)}.csv`
+export const strongCsvFilename = (unit: Unit, now = Date.now()) => `liftlog-strong-format-${unit}-${new Date(now).toISOString().slice(0, 10)}.csv`

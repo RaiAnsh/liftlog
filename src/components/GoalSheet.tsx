@@ -27,7 +27,7 @@ export default function GoalSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <Sheet title="What’s your main goal?" onClose={close}>
-      <p className="mb-3 text-center text-sm text-mute">ARLog is built around muscle growth. Pick what you want to build and it tunes your weekly sets, tips and suggestions to match.</p>
+      <p className="mb-3 text-center text-sm text-mute">LiftLog is built around muscle growth. Pick what you want to build and it tunes your weekly sets, tips and suggestions to match.</p>
       {!custom ? (
         <div className="space-y-3">
           {GOALS.map((g, i) => (

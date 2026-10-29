@@ -56,9 +56,9 @@ export function parseBackup(text: string): ParsedBackup {
   let raw: unknown
   try { raw = JSON.parse(text) } catch { return { ok: false, error: 'That file isn’t a valid backup (it isn’t readable JSON).' } }
   const f = raw as Partial<BackupFile> | null
-  if (!f || f.format !== BACKUP_FORMAT) return { ok: false, error: 'That doesn’t look like an ARLog backup file.' }
+  if (!f || f.format !== BACKUP_FORMAT) return { ok: false, error: 'That doesn’t look like an LiftLog backup file.' }
   if (typeof f.schemaVersion !== 'number') return { ok: false, error: 'The backup has no version number, so it can’t be restored safely.' }
-  if (f.schemaVersion > SCHEMA_VERSION) return { ok: false, error: 'This backup was made by a newer version of ARLog. Update the app first, then restore.' }
+  if (f.schemaVersion > SCHEMA_VERSION) return { ok: false, error: 'This backup was made by a newer version of LiftLog. Update the app first, then restore.' }
   const t = f.tables
   if (!t || !isArr(t.exercises) || !isArr(t.routines) || !isArr(t.workouts) || !isArr(t.sets)) return { ok: false, error: 'The backup is missing data tables.' }
 
@@ -93,7 +93,7 @@ export async function restoreBackup(file: BackupFile, d: LiftLogDB = defaultDb):
   })
 }
 
-export const backupFilename = (now = Date.now()) => `arlog-backup-${new Date(now).toISOString().slice(0, 10)}.json`
+export const backupFilename = (now = Date.now()) => `liftlog-backup-${new Date(now).toISOString().slice(0, 10)}.json`
 
 export type ShareResult = 'shared' | 'downloaded' | 'cancelled'
 

@@ -4,7 +4,7 @@ export interface Cite { text: string; url?: string }
 export interface Principle {
   id: SciId
   title: string
-  /** what ARLog does with this */
+  /** what LiftLog does with this */
   rule: string
   /** what the research found, stated as plainly and carefully as possible */
   evidence: string
@@ -15,7 +15,7 @@ export interface Principle {
 }
 
 /**
- * Summaries of the research behind ARLog's coaching rules. They were checked against paper abstracts and
+ * Summaries of the research behind LiftLog's coaching rules. They were checked against paper abstracts and
  * review articles while building the app, but they are plain-language summaries by the app's author, not
  * medical or coaching advice. Where a number is a practical choice rather than a study result, it says so.
  */
@@ -53,7 +53,7 @@ export const PRINCIPLES: Principle[] = [
   },
   {
     id: 'frequency', title: 'How often to train a muscle', confidence: 'Fairly supported',
-    rule: 'ARLog does not force a frequency. If nearly all of a muscle\'s weekly sets land in one session, it suggests spreading them across two.',
+    rule: 'LiftLog does not force a frequency. If nearly all of a muscle\'s weekly sets land in one session, it suggests spreading them across two.',
     evidence: 'An early meta-analysis (Schoenfeld et al., 2016) found higher frequencies looked better, but could not separate frequency from volume. A later meta-analysis (Schoenfeld, Grgic & Krieger, 2019) found no significant difference between frequencies when weekly volume was equated. Frequency mainly matters because it makes a given weekly volume easier to do well.',
     caveat: 'When volume is not matched, higher frequencies do tend to come out ahead, which is partly why splitting big weekly totals across days is practical advice.',
     cites: [

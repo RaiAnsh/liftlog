@@ -39,7 +39,7 @@ export default function Settings() {
         <div className="label px-1">Training</div>
         <div className="overflow-hidden rounded-2xl bg-card">
           <button onClick={() => setGoalOpen(true)} className="row-press flex w-full items-center justify-between px-4 py-3.5 text-left"><span>Training goal <span className="text-mute">· {goalLabel(s.goal) ?? 'not set'}</span></span><span className="text-mute"><ChevronRight /></span></button>
-          <LinkRow to="/science">The science behind ARLog</LinkRow>
+          <LinkRow to="/science">The science behind LiftLog</LinkRow>
         </div>
       </section>
       <BackupSection />

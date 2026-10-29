@@ -17,9 +17,9 @@ export default function Science() {
   return (
     <div className="space-y-4">
       <BackBar />
-      <Title sub="Why ARLog coaches the way it does">The science</Title>
+      <Title sub="Why LiftLog coaches the way it does">The science</Title>
       <div className="card text-sm text-mute">
-        ARLog is built around muscle growth. Every suggestion it makes traces back to one of the points below. These are plain-language summaries of published research, written by the app&rsquo;s author, checked against the papers&rsquo; abstracts and review articles. They are not medical advice, and the exact numbers are practical choices where research gives a range. Read the papers if the details matter to you.
+        LiftLog is built around muscle growth. Every suggestion it makes traces back to one of the points below. These are plain-language summaries of published research, written by the app&rsquo;s author, checked against the papers&rsquo; abstracts and review articles. They are not medical advice, and the exact numbers are practical choices where research gives a range. Read the papers if the details matter to you.
       </div>
       {PRINCIPLES.map((p, i) => (
         <section key={p.id} id={`sci-${p.id}`} className={`rise card space-y-2.5 ${focus === p.id ? 'ring-2 ring-accent' : ''}`} style={{ ['--i' as string]: Math.min(i, 6) }}>
@@ -27,7 +27,7 @@ export default function Science() {
             <h2 className="text-lg font-extrabold leading-tight">{p.title}</h2>
             <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${TONE[p.confidence]}`}>{p.confidence}</span>
           </div>
-          <div><div className="label mb-0.5">What ARLog does</div><p className="text-[15px] leading-snug">{p.rule}</p></div>
+          <div><div className="label mb-0.5">What LiftLog does</div><p className="text-[15px] leading-snug">{p.rule}</p></div>
           <div><div className="label mb-0.5">What the research found</div><p className="text-[15px] leading-snug text-mute">{p.evidence}</p></div>
           <div><div className="label mb-0.5">Limits</div><p className="text-[15px] leading-snug text-mute">{p.caveat}</p></div>
           {p.cites.length > 0 && (

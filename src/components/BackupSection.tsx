@@ -82,7 +82,7 @@ export default function BackupSection() {
       {points && points.length > 0 && (
         <div className="card space-y-2">
           <div className="font-semibold">Automatic restore points</div>
-          <p className="text-xs text-mute">ARLog quietly keeps a copy once a day (and before any restore). They guard against app mistakes and bad updates. They live on this phone, so exported backups are still your real safety net.</p>
+          <p className="text-xs text-mute">LiftLog quietly keeps a copy once a day (and before any restore). They guard against app mistakes and bad updates. They live on this phone, so exported backups are still your real safety net.</p>
           {points.map((p) => (
             <div key={p.id} className="flex items-center justify-between gap-2 rounded-xl bg-card2 px-3 py-2">
               <div className="min-w-0 text-sm">
