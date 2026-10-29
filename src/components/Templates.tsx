@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { describeTarget, nextTarget } from '../coaching/targets'
 import { addExampleTemplate, type ExampleTemplate } from '../data/templates'
 import { db } from '../db/db'
+import { isCardio } from '../db/exercises'
 import { guessMuscles } from '../import/exerciseMap'
 import { formatWeight } from '../units'
 import { startFromRoutine } from '../workout/draft'
@@ -40,7 +41,7 @@ export function TemplateSheet({ routine, exercises, prev, units, deload, onClose
       <div className="mb-3 space-y-1">
         {routine.items.map((it, k) => {
           const e = exercises.get(it.exerciseId)
-          const t = e ? nextTarget(prev.get(it.exerciseId), { repMin: it.repRangeMin, repMax: it.repRangeMax, incrementKg: e.weightIncrement, fmt: fmtW(units), deload: it.exerciseId in deload }) : null
+          const t = e && !isCardio(e) ? nextTarget(prev.get(it.exerciseId), { repMin: it.repRangeMin, repMax: it.repRangeMax, incrementKg: e.weightIncrement, fmt: fmtW(units), deload: it.exerciseId in deload }) : null
           return (
             <div key={k} className="rise flex items-center gap-3 rounded-xl py-1.5" style={{ ['--i' as string]: k }}>
               <ExerciseThumb name={e?.name ?? '?'} muscles={e?.primaryMuscles} secondary={e?.secondaryMuscles} size={44} />

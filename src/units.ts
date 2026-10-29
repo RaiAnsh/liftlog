@@ -15,3 +15,9 @@ export function formatWeight(kg: number, unit: Unit): string {
 export function formatEstimate(kg: number, unit: Unit): string {
   return String(Math.round(fromKg(kg, unit) * 10) / 10)
 }
+
+const MI_PER_KM = 0.621371
+/** Distance is stored in km; lb users see miles, kg users see km (like weight, it follows your unit). */
+export const distUnit = (unit: Unit) => (unit === 'lb' ? 'mi' : 'km')
+export const kmToDisplay = (km: number, unit: Unit) => Math.round((unit === 'lb' ? km * MI_PER_KM : km) * 100) / 100
+export const displayToKm = (v: number, unit: Unit) => (unit === 'lb' ? v / MI_PER_KM : v)

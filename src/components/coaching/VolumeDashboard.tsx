@@ -97,7 +97,7 @@ export default function VolumeDashboard({ counts, breakdown, last, now, settings
                 <div className="mt-1 flex justify-between text-xs text-mute">
                   <span>{ago(now, last.get(m))}</span>
                   <span className="num">
-                    <b className="text-fg"><CountUp value={n} format={(x) => fmtSets(Math.round(x * 2) / 2)} /></b> sets
+                    <b className="text-fg"><CountUp value={n} format={(x) => fmtSets(Math.round(x * 2) / 2)} /></b> {n === 1 ? 'set' : 'sets'}
                     {u >= 1 && Math.abs(diff) >= 1 && <span className={diff > 0 ? 'text-good' : 'text-warn'}> {diff > 0 ? '▲' : '▼'}{Math.abs(diff)} vs usual</span>}
                   </span>
                 </div>

@@ -31,6 +31,8 @@ export interface Exercise {
   archived: boolean
   /** true when muscles are unassigned and the user still has to tag them */
   needsReview: boolean
+  /** time/distance exercise (treadmill, bike...) instead of weight x reps. Absent on older rows: see isCardio() */
+  cardio?: boolean
 }
 
 export interface RoutineItem {
@@ -153,6 +155,9 @@ export interface DraftSet {
   reps: number | null
   rpe: number | null
   completed: boolean
+  /** cardio only: duration in seconds and distance in km */
+  seconds?: number | null
+  distanceKm?: number | null
   /** when it was completed (epoch ms), used for momentum streaks */
   doneAt?: number
   /** met its target (or the bottom of the rep range when there is no target) */
@@ -169,6 +174,7 @@ export interface DraftExercise {
   superset: number | null
   repMin: number | null
   repMax: number | null
+  cardio?: boolean
   sets: DraftSet[]
 }
 

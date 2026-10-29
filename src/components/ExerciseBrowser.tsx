@@ -4,15 +4,17 @@ import type { ExerciseItem } from '../lib/useExerciseItems'
 import { SearchIcon } from './Icons'
 
 const SCOPES: [Scope, string][] = [['all', 'Everything'], ['mine', 'My exercises'], ['library', 'Library']]
-const TABS: { id: GroupId | 'all'; label: string; color?: string }[] = [{ id: 'all', label: 'All' }, ...GROUPS.filter((g) => g.id !== 'other').map((g) => ({ id: g.id, label: g.label, color: g.color }))]
+const TABS: { id: GroupId | 'all'; label: string; color?: string }[] = [{ id: 'all', label: 'All' }, ...GROUPS.map((g) => ({ id: g.id, label: g.label, color: g.color }))]
 
 /**
  * The exercise list, organised the way people think about a split: a Push / Pull / Legs / Core switcher,
  * then sections by muscle (Chest, Shoulders, Triceps…). Your most-used exercises come first in each
  * section and long sections fold behind "Show more". Used by both the picker and the Exercises tab.
  */
-export default function ExerciseBrowser({ items, renderRow, stickyTop = '0px' }: {
+export default function ExerciseBrowser({ items, renderRow, stickyTop = '0px', onCreate }: {
   items: ExerciseItem[] | undefined; renderRow: (item: ExerciseItem) => ReactNode; stickyTop?: string
+  /** Called with whatever is typed in the search box when the lifter wants to make their own exercise. */
+  onCreate?: (name: string) => void
 }) {
   const [q, setQ] = useState('')
   const [scope, setScope] = useState<Scope>('all')
@@ -36,15 +38,16 @@ export default function ExerciseBrowser({ items, renderRow, stickyTop = '0px' }:
         <div className="relative">
           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-mute"><SearchIcon /></span>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search exercises" aria-label="Search exercises"
-            className="w-full rounded-2xl bg-card py-3 pl-10 pr-4 outline-none placeholder:text-mute focus:ring-2 focus:ring-accent" />
+            className={`w-full rounded-2xl bg-card py-3 pl-10 outline-none placeholder:text-mute focus:ring-2 focus:ring-accent ${onCreate ? 'pr-[5.5rem]' : 'pr-4'}`} />
+          {onCreate && <button onClick={() => onCreate(q.trim())} className="press absolute right-1.5 top-1/2 -translate-y-1/2 rounded-xl bg-accent px-3 py-2 text-sm font-bold text-white" aria-label="Create a new exercise">+ New</button>}
         </div>
-        <div className="grid grid-cols-5 gap-1 rounded-2xl bg-card p-1" role="tablist">
+        <div className="grid grid-cols-6 gap-0.5 rounded-2xl bg-card p-1" role="tablist">
           {TABS.map((t) => {
             const on = group === t.id
             const n = t.id === 'all' ? Object.values(counts).reduce((a, b) => a + b, 0) : (counts[t.id] ?? 0)
             return (
               <button key={t.id} role="tab" aria-selected={on} onClick={() => setGroup(t.id)}
-                className={`press relative rounded-xl py-2 text-[13px] font-bold transition-colors ${on ? 'bg-card2 text-fg shadow' : 'text-mute'}`}>
+                className={`press relative rounded-xl py-2 text-[12px] font-bold transition-colors ${on ? 'bg-card2 text-fg shadow' : 'text-mute'}`}>
                 {t.color && <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle" style={{ background: t.color }} />}
                 {t.label}
                 <span className="block text-[10px] font-medium text-mute">{n}</span>
@@ -63,6 +66,7 @@ export default function ExerciseBrowser({ items, renderRow, stickyTop = '0px' }:
       {items && sections.length === 0 && (
         <div className="card text-center text-mute">
           {dq.trim() ? <>No exercises match “{dq.trim()}”.</> : 'Nothing here yet.'}
+          {onCreate && <button className="btn btn-primary mt-3 w-full" onClick={() => onCreate(dq.trim())}>{dq.trim() ? `Create “${dq.trim()}”` : 'Create your own exercise'}</button>}
           {(scope !== 'all' || group !== 'all') && <button className="mt-2 block w-full text-sm font-semibold text-accent" onClick={() => { setScope('all'); setGroup('all') }}>Show everything</button>}
         </div>
       )}
@@ -72,7 +76,7 @@ export default function ExerciseBrowser({ items, renderRow, stickyTop = '0px' }:
           const key = `${s.group.id}/${s.section.id}`
           const expanded = open.has(key)
           const shown = expanded ? s.items : s.items.slice(0, limit)
-          const heading = group === 'all' && s.group.id !== lastGroup && s.group.id !== 'other'
+          const heading = group === 'all' && s.group.id !== lastGroup
           lastGroup = s.group.id
           return (
             <section key={key}>
@@ -99,6 +103,12 @@ export default function ExerciseBrowser({ items, renderRow, stickyTop = '0px' }:
           )
         })}
       </div>
+      {onCreate && items && sections.length > 0 && (
+        <button onClick={() => onCreate(dq.trim())} className="press card mt-4 flex w-full items-center gap-3 text-left">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-accent/15 text-2xl text-accent">+</span>
+          <span className="min-w-0 flex-1"><b className="block">Can’t find it? Create your own</b><span className="text-sm text-mute">Name it and pick the muscles it works. It counts in your coaching like any other.</span></span>
+        </button>
+      )}
     </div>
   )
 }

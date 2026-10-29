@@ -2,10 +2,11 @@ import { Link } from 'react-router-dom'
 import ExerciseThumb from './ExerciseThumb'
 import { bestSet, formatDuration, formatVolume, groupByExercise, isHard, volumeKg } from '../lib/stats'
 import { formatWeight } from '../units'
+import { fmtCardio } from '../lib/stats'
 import type { Exercise, Unit, Workout, WorkoutSet } from '../types'
 
 export const fmtSet = (s: WorkoutSet, units: Unit) =>
-  s.weightKg > 0 ? `${formatWeight(s.weightKg, units)} ${units} × ${s.reps}` : s.reps > 0 ? `${s.reps} reps` : `${Math.round(s.seconds / 60)} min`
+  s.weightKg > 0 ? `${formatWeight(s.weightKg, units)} ${units} × ${s.reps}` : s.reps > 0 ? `${s.reps} reps` : fmtCardio(s.seconds, s.distance, units)
 
 /** Strong-style history card: title, date, stats, then the exercises with their best set. */
 export default function WorkoutCard({

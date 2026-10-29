@@ -7,6 +7,7 @@ import { useExerciseItems } from '../lib/useExerciseItems'
 import { MUSCLE_LABELS, type Exercise } from '../types'
 import ExerciseThumb from './ExerciseThumb'
 import ExerciseBrowser from './ExerciseBrowser'
+import ExerciseFormSheet from './ExerciseFormSheet'
 
 
 /** Full-screen chooser. Library entries you haven't used yet are added to your exercises on selection. */
@@ -14,6 +15,7 @@ export default function ExercisePicker({ multi, onPick, onClose }: { multi?: boo
   const { units } = useSettings()
   const items = useExerciseItems()
   const [chosen, setChosen] = useState<string[]>([])
+  const [creating, setCreating] = useState<string | null>(null)
 
   async function resolve(keys: string[]) {
     const out: Exercise[] = []
@@ -40,7 +42,7 @@ export default function ExercisePicker({ multi, onPick, onClose }: { multi?: boo
         <div className="w-14 text-right text-sm font-semibold text-accent">{chosen.length > 0 ? chosen.length : ''}</div>
       </div>
       <div className="flex-1 overflow-y-auto px-4 pb-28">
-        <ExerciseBrowser items={items} renderRow={(i) => {
+        <ExerciseBrowser items={items} onCreate={(n) => setCreating(n)} renderRow={(i) => {
           const on = chosen.includes(i.key)
           return (
             <button onClick={() => toggle(i.key)} className={`row-press flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors ${on ? 'bg-accent/15' : ''}`}>
@@ -54,6 +56,14 @@ export default function ExercisePicker({ multi, onPick, onClose }: { multi?: boo
           )
         }} />
       </div>
+      {creating !== null && (
+        <ExerciseFormSheet initialName={creating} onClose={() => setCreating(null)} onSaved={(ex) => {
+          setCreating(null)
+          // Straight into the workout: single mode picks it, multi mode ticks it.
+          if (multi) setChosen((c) => (c.includes(ex.nameKey) ? c : [...c, ex.nameKey]))
+          else onPick([ex])
+        }} />
+      )}
       {multi && (
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-bg via-bg to-transparent px-4 pt-6" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
           <button className="btn btn-primary w-full disabled:opacity-40" disabled={!chosen.length} onClick={() => resolve(chosen)}>

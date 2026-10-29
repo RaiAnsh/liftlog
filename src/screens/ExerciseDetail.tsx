@@ -1,11 +1,12 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { lazy, Suspense, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { db } from '../db/db'
-import { buildExercise, nameKey } from '../db/exercises'
+import { buildExercise, isCardio, nameKey } from '../db/exercises'
 import { useSettings } from '../db/settings'
 import { imageUrl, instructionsFor, GYM_LIBRARY } from '../data/images'
 import { BackBar } from '../components/PageHeader'
+import ExerciseFormSheet from '../components/ExerciseFormSheet'
 import PlateauCard from '../components/coaching/PlateauCard'
 import { useCoaching } from '../coaching/useCoaching'
 import ExerciseThumb from '../components/ExerciseThumb'
@@ -27,6 +28,8 @@ export default function ExerciseDetail() {
   const { units } = useSettings()
   const [tab, setTab] = useState<Tab>('about')
   const [photos, setPhotos] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const nav = useNavigate()
   const { h, c, settings } = useCoaching()
   const data = useLiveQuery(async () => {
     const ex = (await db.exercises.where('nameKey').equals(key).first()) ?? null
@@ -43,7 +46,8 @@ export default function ExerciseDetail() {
   const steps = instructionsFor(name)
   const rec = records(data.points)
   const hasHistory = data.points.length > 0
-  const tabs: [Tab, string][] = [['about', 'About'], ['history', 'History'], ['charts', 'Charts'], ['records', 'Records']]
+  const cardio = data.ex ? isCardio(data.ex) : false
+  const tabs: [Tab, string][] = cardio ? [['about', 'About'], ['history', 'History']] : [['about', 'About'], ['history', 'History'], ['charts', 'Charts'], ['records', 'Records']]
   const w = (kg: number) => `${formatWeight(kg, units)} ${units}`
 
   return (
@@ -58,6 +62,9 @@ export default function ExerciseDetail() {
       </div>
 
       {c && h && c.plateaus.filter((p) => p.exercise.nameKey === key).map((p) => <PlateauCard key={p.exercise.id} item={p} settings={settings} all={h.exercises} usage={c.usage} />)}
+
+      {data.ex && <button className="press w-full rounded-xl bg-card2 py-2.5 text-sm font-semibold text-accent" onClick={() => setEditing(true)}>{data.ex.isCustom ? 'Edit exercise' : 'Fix muscles or equipment'}</button>}
+      {editing && data.ex && <ExerciseFormSheet exercise={data.ex} onClose={() => setEditing(false)} onSaved={(e) => { setEditing(false); if (e.nameKey !== key) nav(`/exercise/${encodeURIComponent(e.nameKey)}`, { replace: true }) }} />}
 
       {!data.ex && <button className="btn btn-primary w-full" onClick={() => db.exercises.add(buildExercise(name, units))}>Add to my exercises</button>}
 

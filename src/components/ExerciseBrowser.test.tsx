@@ -13,7 +13,7 @@ describe('ExerciseBrowser (organised picker)', () => {
 
   it('shows the Push / Pull / Legs / Core switcher with counts', () => {
     const h = html(items)
-    for (const label of ['All', 'Push', 'Pull', 'Legs', 'Core']) expect(h).toContain(`>${label}`)
+    for (const label of ['All', 'Push', 'Pull', 'Legs', 'Core', 'Cardio']) expect(h).toContain(`>${label}`)
     expect(h).toMatch(/Push[\s\S]*?6<\/span>/) // six chest exercises in Push
   })
   it('groups under big Push / Pull / Legs headings with muscle sections beneath', () => {
@@ -34,5 +34,26 @@ describe('ExerciseBrowser (organised picker)', () => {
   it('shows skeletons while loading and a helpful empty state otherwise', () => {
     expect(html(undefined)).toContain('skeleton')
     expect(html([])).toContain('Nothing here yet.')
+  })
+})
+
+describe('creating your own exercise from the browser', () => {
+  const withCreate = (items: ExerciseItem[] | undefined) => renderToStaticMarkup(<ExerciseBrowser items={items} onCreate={() => {}} renderRow={(i) => <span data-row>{i.name}</span>} />)
+  const some = [item('Leg Press', 3), item('Lat Pulldown (Cable)', 2)]
+  it('offers a + New button, and a "Can\'t find it?" card under the list', () => {
+    const h = withCreate(some)
+    expect(h).toContain('+ New')
+    expect(h).toContain('Can’t find it? Create your own')
+  })
+  it('offers to create when the list is empty', () => {
+    expect(withCreate([])).toContain('Create your own exercise')
+  })
+  it('shows nothing extra when creating is not supported by the screen', () => {
+    const h = html(some)
+    expect(h).not.toContain('+ New')
+    expect(h).not.toContain('Create your own')
+  })
+  it('has a Cardio tab so machines are easy to find', () => {
+    expect(withCreate(some)).toContain('>Cardio')
   })
 })

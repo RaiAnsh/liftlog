@@ -113,7 +113,7 @@ export const IMAGE_IDS: Record<string, string> = {
 }
 
 /** Common gym machines and equipment (the built-in library offered in the exercise picker). */
-export const GYM_LIBRARY: string[] = [
+export const CORE_LIBRARY: string[] = [
  "Chest Press (Machine)",
  "Incline Chest Press (Machine)",
  "Shoulder Press (Machine)",

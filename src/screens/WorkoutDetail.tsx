@@ -7,7 +7,7 @@ import { startFromWorkout } from '../workout/draft'
 import { getDraft, startDraft } from '../workout/store'
 import { BackBar } from '../components/PageHeader'
 import ExerciseThumb from '../components/ExerciseThumb'
-import { formatDuration, formatVolume, groupByExercise, isHard, volumeKg } from '../lib/stats'
+import { fmtCardio, formatDuration, formatVolume, groupByExercise, isHard, volumeKg } from '../lib/stats'
 import { formatEstimate, formatWeight } from '../units'
 
 const TAG: Record<string, { t: string; c: string }> = {
@@ -115,7 +115,7 @@ export default function WorkoutDetail() {
               return (
                 <div key={s.id} className="num grid grid-cols-[36px_1fr_auto] rounded-lg px-1 py-1.5 odd:bg-card2/60">
                   <span className={`font-semibold ${tag?.c ?? 'text-mute'}`}>{tag?.t ?? n}</span>
-                  <span>{s.weightKg > 0 ? `${formatWeight(s.weightKg, units)} ${units} × ${s.reps}` : s.reps > 0 ? `${s.reps} reps` : `${Math.round(s.seconds / 60)} min`}</span>
+                  <span>{s.weightKg > 0 ? `${formatWeight(s.weightKg, units)} ${units} × ${s.reps}` : s.reps > 0 ? `${s.reps} reps` : fmtCardio(s.seconds, s.distance, units)}</span>
                   <span className="text-mute">{s.rpe ?? ''}</span>
                 </div>
               )

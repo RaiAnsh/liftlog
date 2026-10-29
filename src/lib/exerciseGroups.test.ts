@@ -20,7 +20,8 @@ describe('filing exercises under Push / Pull / Legs / Core', () => {
   })
 
   it('every built-in library machine and example-template exercise lands in a real group', () => {
-    for (const n of [...GYM_LIBRARY, ...EXAMPLE_TEMPLATES.flatMap((t) => t.items.map((i) => i.name))]) {
+    const cardio = /treadmill|bike|elliptical|stair|rowing \(machine\)|running|walking(?! lunge)|hiking|arc trainer|jacob|ski erg|jump rope|swimming|battle rope/i
+    for (const n of [...GYM_LIBRARY, ...EXAMPLE_TEMPLATES.flatMap((t) => t.items.map((i) => i.name))].filter((x) => !cardio.test(x))) {
       expect(locate(guessMuscles(n).primary).group.id, n).not.toBe('other')
     }
   })
@@ -33,7 +34,7 @@ describe('filing exercises under Push / Pull / Legs / Core', () => {
 
   it('groups into ordered sections, dropping empty ones', () => {
     const r = organize(items, {})
-    expect(r.map((s) => `${s.group.label}/${s.section.label}`)).toEqual(['Push/Chest', 'Push/Shoulders', 'Pull/Back', 'Legs/Quads', 'Core/Abs', 'Cardio & other/Cardio & other'])
+    expect(r.map((s) => `${s.group.label}/${s.section.label}`)).toEqual(['Push/Chest', 'Push/Shoulders', 'Pull/Back', 'Legs/Quads', 'Core/Abs', 'Cardio/Cardio machines'])
   })
   it('puts your most-used exercises first within a section', () => {
     expect(organize(items, {})[0].items.map((i) => i.name)).toEqual(['Bench Press (Smith Machine)', 'Pec Deck (Machine)'])

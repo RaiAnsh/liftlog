@@ -1,4 +1,5 @@
 import { targetForSet, type Target } from '../coaching/targets'
+import { isCardio } from '../db/exercises'
 import type {
   ActiveWorkout, DraftExercise, DraftSet, Exercise, Routine, SetType, Workout, WorkoutSet,
 } from '../types'
@@ -21,10 +22,12 @@ export const emptyDraft = (now: number, name?: string): ActiveWorkout => ({
 export function draftExercise(
   ex: Exercise, o: { restSeconds: number; sets?: number; repMin?: number | null; repMax?: number | null },
 ): DraftExercise {
+  const cardio = isCardio(ex)
   return {
-    uid: uid(), exerciseId: ex.id!, restSeconds: o.restSeconds, notes: '', showRpe: false, superset: null,
-    repMin: o.repMin ?? ex.repRangeMin, repMax: o.repMax ?? ex.repRangeMax,
-    sets: Array.from({ length: o.sets ?? 3 }, () => newSet()),
+    uid: uid(), exerciseId: ex.id!, restSeconds: cardio ? 0 : o.restSeconds, notes: '', showRpe: false, superset: null,
+    repMin: cardio ? null : (o.repMin ?? ex.repRangeMin), repMax: cardio ? null : (o.repMax ?? ex.repRangeMax), cardio,
+    // A cardio session is usually one block; strength defaults to three sets.
+    sets: Array.from({ length: o.sets ?? (cardio ? 1 : 3) }, () => newSet()),
   }
 }
 
@@ -98,6 +101,14 @@ export function toggleComplete(d: ActiveWorkout, exUid: string, setUid: string, 
   const s = e.sets[idx]
   if (s.completed) return updateSet(d, exUid, setUid, { completed: false })
 
+  if (e.cardio) {
+    // Cardio is logged as time (and optionally distance), with no rest timer.
+    const p = previousFor(prev, e.sets, idx)
+    const seconds = s.seconds ?? p?.seconds ?? null
+    if (!(seconds && seconds > 0)) return d
+    return updateSet(d, exUid, setUid, { completed: true, seconds, distanceKm: s.distanceKm ?? (p && p.distance > 0 ? p.distance : null) })
+  }
+
   const p = previousFor(prev, e.sets, idx)
   const t = targetForSet(target, e.sets, idx)
   const reps = s.reps ?? t?.reps ?? p?.reps ?? null
@@ -169,8 +180,8 @@ export function draftToRows(d: ActiveWorkout, now: number) {
     for (const s of e.sets) {
       if (!s.completed) continue
       sets.push({
-        exerciseId: e.exerciseId, order: sets.length, type: s.type, weightKg: s.weightKg ?? 0, reps: s.reps ?? 0, rpe: s.rpe,
-        distance: 0, seconds: 0, notes: first ? e.notes.trim() : '', completed: true, supersetGroup: e.superset,
+        exerciseId: e.exerciseId, order: sets.length, type: s.type, weightKg: e.cardio ? 0 : (s.weightKg ?? 0), reps: e.cardio ? 0 : (s.reps ?? 0), rpe: s.rpe,
+        distance: e.cardio ? (s.distanceKm ?? 0) : 0, seconds: e.cardio ? (s.seconds ?? 0) : 0, notes: first ? e.notes.trim() : '', completed: true, supersetGroup: e.superset,
       })
       first = false
     }

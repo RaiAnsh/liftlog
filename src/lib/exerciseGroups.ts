@@ -43,7 +43,7 @@ export const GROUPS: Group[] = [
       { id: 'lowerback', label: 'Lower back', muscles: ['lower_back'] },
     ],
   },
-  { id: 'other', label: 'Cardio & other', blurb: 'Exercises without a muscle tag', color: '#8a93a3', sections: [{ id: 'other', label: 'Cardio & other', muscles: [] }] },
+  { id: 'other', label: 'Cardio', blurb: 'Time and distance, no muscle tags', color: '#ff5a7a', sections: [{ id: 'other', label: 'Cardio machines', muscles: [] }] },
 ]
 
 /** Where an exercise lives: by its first primary muscle (a deadlift is filed under hamstrings, etc.). */

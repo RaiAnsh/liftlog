@@ -1,7 +1,11 @@
 import instructions from './instructions.json'
 import { IMAGE_IDS } from './exerciseImages'
 
-export { GYM_LIBRARY } from './exerciseImages'
+import { CORE_LIBRARY } from './exerciseImages'
+import { LIBRARY } from './library'
+
+/** The full built-in library: the original photo-backed set plus the broader list. */
+export const GYM_LIBRARY: string[] = [...new Set([...CORE_LIBRARY, ...LIBRARY])]
 
 const norm = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
 

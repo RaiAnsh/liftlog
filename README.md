@@ -62,6 +62,14 @@ Tips:
 - **Stalled lift:** no gain in top weight or estimated 1RM (Epley, sets of 12 reps or fewer) across the last 3 sessions.
 - **Fatigue signal:** only with RPE data. The same weight × reps feels 1+ RPE harder than two weeks ago on 2 or more lifts.
 
+## Can't find an exercise? Make it
+
+The built-in library has 200+ exercises (barbell, dumbbell, machine, cable, Smith, bodyweight, and a **Cardio** tab with treadmill, bikes,
+elliptical, stair climber, rowing and more). If your exercise still isn't there, tap **+ New** in the exercise picker or the Exercises tab, name it,
+pick the equipment and tap the muscles it works (once for a main muscle, again for "also works"). It's saved to *your* data and counts toward weekly
+volume, goal targets, coach tips and Push/Pull/Legs filing exactly like a built-in one. You can fix the muscles of any exercise later from its page.
+Cardio exercises are logged as time and distance instead of weight and reps.
+
 ## Your goal and the hypertrophy coach
 
 On first use LiftLog asks what you want to build: **Upper-body V-taper**, **Glutes & legs**, **Balanced**, or a custom per-muscle mix. That

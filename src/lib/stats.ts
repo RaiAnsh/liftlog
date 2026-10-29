@@ -38,3 +38,10 @@ export const formatDuration = (startedAt: number, endedAt: number | null) => {
 }
 
 export const formatVolume = (n: number) => (n >= 10000 ? `${(n / 1000).toFixed(1)}k` : Math.round(n).toLocaleString())
+
+/** "20 min · 1.9 mi" for a cardio set. */
+export function fmtCardio(seconds: number, distanceKm: number, unit: 'lb' | 'kg'): string {
+  const mins = seconds >= 600 ? Math.round(seconds / 60) : Math.round(seconds / 6) / 10
+  const d = distanceKm > 0 ? ` · ${Math.round((unit === 'lb' ? distanceKm * 0.621371 : distanceKm) * 100) / 100} ${unit === 'lb' ? 'mi' : 'km'}` : ''
+  return `${mins} min${d}`
+}

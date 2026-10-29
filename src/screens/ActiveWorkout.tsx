@@ -15,7 +15,9 @@ import { showFire } from '../lib/fire'
 import { fireFor, isHit, streakOf } from '../workout/momentum'
 import Sheet, { SheetRow } from '../components/Sheet'
 import { fmtClock, useNow } from '../lib/useNow'
-import { formatWeight, toKg } from '../units'
+import { displayToKm, distUnit, formatWeight, kmToDisplay, toKg } from '../units'
+import { fmtCardio } from '../lib/stats'
+import { isCardio } from '../db/exercises'
 import {
   addSet, addWarmups, completedSetCount, draftExercise, incompleteSetCount, moveExercise, patchExercise, previousFor, removeExercise,
   removeSet, swapExercise, toggleComplete, toggleSuperset, updateSet,
@@ -68,6 +70,8 @@ function SetRow({ ex, set, index, prev, units, bests, target }: { ex: DraftExerc
     const next = toggleComplete(getD(), ex.uid, set.uid, prev, Date.now(), target)
     if (next === getD()) { setBad(true); setTimeout(() => setBad(false), 900); return }
     updateDraft(() => next)
+    // Cardio has no reps to judge, no PRs and no streaks: just log it.
+    if (ex.cardio) { navigator.vibrate?.(8); return }
     const done = next.exercises.find((e) => e.uid === ex.uid)!.sets.find((x) => x.uid === set.uid)!
     const earlier = next.exercises.find((e) => e.uid === ex.uid)!.sets
       .filter((x) => x.uid !== set.uid && x.completed && x.type !== 'warmup')
@@ -80,6 +84,31 @@ function SetRow({ ex, set, index, prev, units, bests, target }: { ex: DraftExerc
       const fire = fireFor(streakOf(getD()), !!pr)
       if (fire) { showFire(fire); navigator.vibrate?.([40, 50, 40, 50, 80]) } else if (pr) { showFire(fireFor(0, true)!); navigator.vibrate?.([30, 40, 30]) } else navigator.vibrate?.(8)
     } else navigator.vibrate?.(8)
+  }
+
+  if (ex.cardio) {
+    const du = distUnit(units)
+    return (
+      <>
+        <div className={`num grid grid-cols-[34px_1fr_76px_76px_46px] items-center gap-1.5 rounded-xl px-1 py-1 transition-colors ${set.completed ? 'row-flash bg-good/15' : ''}`}>
+          <button onClick={() => setMenu(true)} className="h-11 font-bold text-mute" aria-label="Set options">{number}</button>
+          <button className="truncate text-left text-sm text-mute" onClick={() => p && patch({ seconds: set.seconds ?? p.seconds, distanceKm: set.distanceKm ?? (p.distance > 0 ? p.distance : null) })}>
+            {p ? fmtCardio(p.seconds, p.distance, units) : '–'}
+          </button>
+          <NumInput value={set.seconds ? Math.round((set.seconds / 60) * 10) / 10 : null} placeholder={p ? String(Math.round(p.seconds / 60)) : 'min'} mode="decimal" bad={bad}
+            onCommit={(v) => patch({ seconds: v === null ? null : Math.round(v * 60) })} />
+          <NumInput value={set.distanceKm ? kmToDisplay(set.distanceKm, units) : null} placeholder={p && p.distance > 0 ? String(kmToDisplay(p.distance, units)) : du} mode="decimal"
+            onCommit={(v) => patch({ distanceKm: v === null ? null : displayToKm(v, units) })} />
+          <button onClick={check} aria-label={set.completed ? 'Mark incomplete' : 'Complete set'} key={String(set.completed)}
+            className={`flex h-11 items-center justify-center rounded-lg text-xl font-bold transition active:scale-95 ${set.completed ? 'pop bg-good text-white' : 'bg-card2 text-mute'}`}>✓</button>
+        </div>
+        {menu && (
+          <Sheet title="Set options" onClose={() => setMenu(false)}>
+            <SheetRow danger onClick={() => { updateDraft((d) => removeSet(d, ex.uid, set.uid)); setMenu(false) }}>Delete set</SheetRow>
+          </Sheet>
+        )}
+      </>
+    )
   }
 
   return (
@@ -132,7 +161,7 @@ function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests
           <div className="truncate text-[17px] font-bold text-accent">{name}</div>
           <div className="truncate text-xs text-mute">
             {supersetLabel && <span className="mr-2 font-semibold text-accent">Superset {supersetLabel}</span>}
-            {ex.repMin && ex.repMax ? `${ex.repMin}–${ex.repMax} reps · ` : ''}rest {fmtRest(ex.restSeconds)}
+            {ex.cardio ? 'Cardio · time and distance' : <>{ex.repMin && ex.repMax ? `${ex.repMin}–${ex.repMax} reps · ` : ''}rest {fmtRest(ex.restSeconds)}</>}
           </div>
         </button>
         <button onClick={() => setMenu(true)} className="flex h-11 w-11 items-center justify-center rounded-full text-2xl text-mute" aria-label="Exercise options">⋯</button>
@@ -153,9 +182,15 @@ function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests
         value={ex.notes} onChange={(e) => pat({ notes: e.target.value })} placeholder="Add note…"
         className="mb-2 w-full bg-transparent px-1 text-sm outline-none placeholder:text-mute/70"
       />
-      <div className={`label mb-1 grid ${cols} gap-1.5 px-1 text-center`}>
-        <span>Set</span><span className="text-left">Previous</span><span>{units}</span><span>Reps</span>{ex.showRpe && <span>RPE</span>}<span>✓</span>
-      </div>
+      {ex.cardio ? (
+        <div className="label mb-1 grid grid-cols-[34px_1fr_76px_76px_46px] gap-1.5 px-1 text-center">
+          <span>Set</span><span className="text-left">Previous</span><span>Min</span><span>{distUnit(units)}</span><span>✓</span>
+        </div>
+      ) : (
+        <div className={`label mb-1 grid ${cols} gap-1.5 px-1 text-center`}>
+          <span>Set</span><span className="text-left">Previous</span><span>{units}</span><span>Reps</span>{ex.showRpe && <span>RPE</span>}<span>✓</span>
+        </div>
+      )}
       <div className="space-y-1">
         {ex.sets.map((s, i) => <SetRow key={s.uid} ex={ex} set={s} index={i} prev={prev} units={units} bests={bests} target={target} />)}
       </div>
@@ -163,21 +198,21 @@ function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests
 
       {menu && (
         <Sheet title={name} onClose={() => setMenu(false)}>
-          <SheetRow onClick={() => { setMenu(false); setWarm(true) }}>Add warm-up sets</SheetRow>
-          {def?.equipment === 'barbell' && <SheetRow onClick={() => { setMenu(false); setPlates(true) }}>Plate calculator</SheetRow>}
+          {!ex.cardio && <SheetRow onClick={() => { setMenu(false); setWarm(true) }}>Add warm-up sets</SheetRow>}
+          {!ex.cardio && def?.equipment === 'barbell' && <SheetRow onClick={() => { setMenu(false); setPlates(true) }}>Plate calculator</SheetRow>}
           <SheetRow onClick={() => { setMenu(false); setSwap(true) }}>Swap exercise</SheetRow>
           <SheetRow onClick={() => { updateDraft((d) => moveExercise(d, ex.uid, -1)); setMenu(false) }}>{index === 0 ? 'Move up (already first)' : 'Move up'}</SheetRow>
           <SheetRow onClick={() => { updateDraft((d) => moveExercise(d, ex.uid, 1)); setMenu(false) }}>{index === total - 1 ? 'Move down (already last)' : 'Move down'}</SheetRow>
           <SheetRow onClick={() => { updateDraft((d) => toggleSuperset(d, ex.uid)); setMenu(false) }}>
             {ex.superset !== null ? 'Remove from superset' : index === total - 1 ? 'Superset with next (none below)' : 'Superset with next exercise'}
           </SheetRow>
-          <SheetRow on={ex.showRpe} onClick={() => pat({ showRpe: !ex.showRpe })}>Track RPE</SheetRow>
-          <div className="border-t border-line px-1 py-3">
+          {!ex.cardio && <SheetRow on={ex.showRpe} onClick={() => pat({ showRpe: !ex.showRpe })}>Track RPE</SheetRow>}
+          {!ex.cardio && <div className="border-t border-line px-1 py-3">
             <div className="mb-2 text-[17px]">Rest timer</div>
             <div className="flex flex-wrap gap-2">
               {REST_CHOICES.map((r) => <button key={r} className={`chip flex items-center ${ex.restSeconds === r ? 'chip-on' : ''}`} onClick={() => pat({ restSeconds: r })}>{fmtRest(r)}</button>)}
             </div>
-          </div>
+          </div>}
           <SheetRow danger onClick={() => { if (confirm(`Remove ${name} from this workout?`)) { updateDraft((d) => removeExercise(d, ex.uid)); setMenu(false) } }}>Remove exercise</SheetRow>
         </Sheet>
       )}
@@ -211,7 +246,7 @@ export default function ActiveWorkout({ draft, avgWeekly = null }: { draft: Draf
     const m = new Map<string, Target | null>()
     for (const ex of draft.exercises) {
       const def = exMap?.get(ex.exerciseId)
-      m.set(ex.uid, def ? nextTarget(prev?.get(ex.exerciseId), {
+      m.set(ex.uid, def && !isCardio(def) ? nextTarget(prev?.get(ex.exerciseId), {
         repMin: ex.repMin ?? def.repRangeMin, repMax: ex.repMax ?? def.repRangeMax, incrementKg: def.weightIncrement,
         fmt: (kg) => `${formatWeight(kg, units)} ${units}`, deload: ex.exerciseId in coachState.deload,
       }) : null)
@@ -224,7 +259,7 @@ export default function ActiveWorkout({ draft, avgWeekly = null }: { draft: Draf
     const m = new Map<string, Advice[]>()
     for (const ex of draft.exercises) {
       const def = exMap?.get(ex.exerciseId)
-      m.set(ex.uid, def ? exerciseAdvice({ exercise: def, last: prev?.get(ex.exerciseId), avgWeekly, targets: weeklyTargets, plannedToday: def.primaryMuscles[0] ? plannedSetsFor(draft, exMap!, def.primaryMuscles[0]) : 0 }) : [])
+      m.set(ex.uid, def && !isCardio(def) ? exerciseAdvice({ exercise: def, last: prev?.get(ex.exerciseId), avgWeekly, targets: weeklyTargets, plannedToday: def.primaryMuscles[0] ? plannedSetsFor(draft, exMap!, def.primaryMuscles[0]) : 0 }) : [])
     }
     return m
   }, [draft, exMap, prev, avgWeekly, weeklyTargets])
