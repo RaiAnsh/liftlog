@@ -90,6 +90,7 @@ export default function ImportScreen() {
             </details>
           )}
           <div className="flex gap-2">
+            <p className="w-full text-sm text-mute">Next: open the Workout tab. LiftLog will offer to turn your usual workouts into templates (you can say no).</p>
             {summary.needingTags > 0 && <Link to="/tags" className="btn btn-primary flex flex-1 items-center justify-center">Review tags</Link>}
             <Link to="/history" className="btn flex flex-1 items-center justify-center">View history</Link>
           </div>

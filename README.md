@@ -29,6 +29,11 @@ volume, "do this next time" tips, program review, plateau detection).
 
 Importing the same file again is safe: it adds nothing twice.
 
+**Templates:** Strong's export doesn't include your saved templates, but your history does name every workout. The first time you open
+the Workout tab after importing, LiftLog offers one at a time to turn your usual workouts (done 3+ times in the past year, like "Push" or
+"Pull") into templates, built from your most recent version of each. Say no and it never asks again. **Templates → Find templates in my history**
+brings back anything you declined, plus older workouts.
+
 ## Using it
 
 The tabs match Strong: **Profile · History · Workout · Exercises**.

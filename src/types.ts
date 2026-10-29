@@ -101,6 +101,8 @@ export interface Settings {
   /** main training goal; sets how many weekly sets each muscle gets. null until you pick one */
   goal: { id: GoalId; tiers: Record<Muscle, Tier> } | null
   goalAsked: boolean
+  /** your answer to "use this workout as a template?", by normalised workout name. Declined ones are never offered again */
+  templateChoices: Record<string, 'added' | 'declined'>
   coachState: CoachState
 }
 
@@ -139,6 +141,7 @@ export const DEFAULT_SETTINGS: Settings = {
   skipLog: [],
   goal: null,
   goalAsked: false,
+  templateChoices: {},
   coachState: { deload: {}, dismissed: {} },
 }
 

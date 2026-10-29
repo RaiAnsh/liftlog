@@ -3,6 +3,11 @@ import { Link } from 'react-router-dom'
 import { db } from '../db/db'
 import { setSetting, useSettings } from '../db/settings'
 import { rotationOf } from '../coaching/suggest'
+import { useState } from 'react'
+import TemplateOfferSheet from '../components/TemplateOfferSheet'
+import { inferTemplates, pendingOffers, type TemplateCandidate } from '../data/inferTemplates'
+import { useHistory } from '../coaching/useCoaching'
+import { showToast } from '../lib/toast'
 import { BackBar, Title } from '../components/PageHeader'
 import type { Routine } from '../types'
 
@@ -23,7 +28,16 @@ export async function duplicateRoutine(r: Routine) {
 
 export default function Routines() {
   const list = useLiveQuery(() => db.routines.orderBy('order').toArray())
-  const { program } = useSettings()
+  const { program, templateChoices } = useSettings()
+  const h = useHistory()
+  const [offer, setOffer] = useState<TemplateCandidate[] | null>(null)
+  // Deliberate request: include older workouts and ones you said no to earlier.
+  const findInHistory = () => {
+    if (!h) return
+    const found = pendingOffers(inferTemplates(h, { now: Date.now(), minSessions: 2, maxAgeDays: 100_000 }), h.routines, templateChoices, true)
+    if (found.length) setOffer(found)
+    else showToast('Nothing new to suggest', { sub: 'Every workout you repeat already has a template.' })
+  }
   if (!list) return <p className="text-mute">Loading…</p>
   const inRot = new Set(rotationOf(list, program).map((r) => r.id!))
   const btn = 'flex h-11 min-w-[44px] items-center justify-center rounded-xl bg-card2 px-3 text-sm font-semibold disabled:opacity-30'
@@ -32,7 +46,8 @@ export default function Routines() {
       <BackBar />
       <Title sub="Create as many as you like">Templates</Title>
       <p className="text-sm text-mute">Templates marked “In rotation” are suggested one after another, in the order below.</p>
-      <Link to="/routine/new" className="btn btn-primary flex items-center justify-center">+ New routine</Link>
+      <Link to="/routine/new" className="btn btn-primary flex items-center justify-center">+ New template</Link>
+      <button className="btn w-full" onClick={findInHistory}>Find templates in my history</button>
       {list.length === 0 && <div className="card text-mute">No templates yet.</div>}
       {list.map((r, i) => (
         <div key={r.id} className="card space-y-3">
@@ -56,6 +71,7 @@ export default function Routines() {
           </div>
         </div>
       ))}
+      {offer && h && <TemplateOfferSheet candidates={offer} exercises={h.exercises} onClose={() => setOffer(null)} />}
     </div>
   )
 }

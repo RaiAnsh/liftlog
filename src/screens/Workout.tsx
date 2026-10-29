@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCoaching } from '../coaching/useCoaching'
 import SuggestionCard from '../components/coaching/SuggestionCard'
@@ -9,6 +9,8 @@ import { EXAMPLE_TEMPLATES, type ExampleTemplate } from '../data/templates'
 import { db } from '../db/db'
 import { useSettings, useSettingsReady } from '../db/settings'
 import GoalSheet from '../components/GoalSheet'
+import TemplateOfferSheet from '../components/TemplateOfferSheet'
+import { inferTemplates, pendingOffers, type TemplateCandidate } from '../data/inferTemplates'
 import { nameKey } from '../db/exercises'
 import { emptyDraft } from '../workout/draft'
 import { getPreviousSets } from '../workout/previous'
@@ -22,6 +24,8 @@ export default function Workout() {
   const { h, c, settings } = useCoaching()
   const ready = useSettingsReady()
   const [goalOpen, setGoalOpen] = useState(false)
+  const [offer, setOffer] = useState<TemplateCandidate[] | null>(null)
+  const offered = useRef(false)
   // Ask about the goal once, after saved settings have loaded and there's some history to coach from.
   useEffect(() => { if (ready && !settings.goal && !settings.goalAsked && h && !draft) setGoalOpen(true) }, [ready, settings.goal, settings.goalAsked, h, draft])
   const [open, setOpen] = useState<Routine | null>(null)
@@ -30,6 +34,16 @@ export default function Workout() {
     const routines = await db.routines.toArray()
     return getPreviousSets(routines.flatMap((r) => r.items.map((i) => i.exerciseId)))
   }, [h?.routines])
+
+  // First time only: offer to turn the lifter's usual workouts (from their own history) into templates.
+  // Waits for the goal question, asks at most once per launch, and any answer is remembered for good.
+  const offers = useMemo(() => (h ? pendingOffers(inferTemplates(h, { now: Date.now() }), h.routines, settings.templateChoices) : []), [h, settings.templateChoices])
+  useEffect(() => {
+    if (ready && h && !draft && !goalOpen && (settings.goal || settings.goalAsked) && offers.length && !offer && !offered.current) {
+      offered.current = true
+      setOffer(offers)
+    }
+  }, [ready, h, draft, goalOpen, settings.goal, settings.goalAsked, offers, offer])
 
   if (draft) return <ActiveWorkout draft={draft} avgWeekly={c?.avgWeekly?.avg ?? null} />
   if (!h || !c || !prev) return <div className="space-y-3"><div className="skeleton h-12 w-52 rounded-xl" /><div className="skeleton h-14 rounded-2xl" /><div className="grid grid-cols-2 gap-3"><div className="skeleton h-32 rounded-2xl" /><div className="skeleton h-32 rounded-2xl" /></div></div>
@@ -89,6 +103,7 @@ export default function Workout() {
       )}
 
       {goalOpen && <GoalSheet onClose={() => setGoalOpen(false)} />}
+      {offer && h && <TemplateOfferSheet candidates={offer} exercises={h.exercises} onClose={() => setOffer(null)} />}
       {open && <TemplateSheet routine={open} exercises={h.exercises} prev={prev} units={units} deload={coachState.deload} onClose={() => setOpen(null)} />}
       {example && <ExampleSheet tpl={example} exercises={h.exercises} units={units} onClose={() => setExample(null)} />}
     </div>
