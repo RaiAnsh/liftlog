@@ -1,4 +1,5 @@
 import Dexie, { type Table } from 'dexie'
+import { DB_NAME } from '../brand'
 import { guessMuscles } from '../import/exerciseMap'
 import type { ActiveWorkout, Exercise, Routine, Workout, WorkoutSet } from '../types'
 
@@ -12,7 +13,7 @@ export class LiftLogDB extends Dexie {
   settings!: Table<SettingRow, string>
   active!: Table<ActiveWorkout, string>
 
-  constructor(name = 'liftlog') {
+  constructor(name = DB_NAME) {
     super(name)
     // Always add a new .version(n) with an .upgrade() instead of editing a released one.
     this.version(1).stores({

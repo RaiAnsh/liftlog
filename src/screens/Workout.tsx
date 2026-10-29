@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCoaching } from '../coaching/useCoaching'
 import SuggestionCard from '../components/coaching/SuggestionCard'
@@ -7,7 +7,8 @@ import { ExampleSheet, TemplateCard, TemplateSheet } from '../components/Templat
 import { Title } from '../components/PageHeader'
 import { EXAMPLE_TEMPLATES, type ExampleTemplate } from '../data/templates'
 import { db } from '../db/db'
-import { useSettings } from '../db/settings'
+import { useSettings, useSettingsReady } from '../db/settings'
+import GoalSheet from '../components/GoalSheet'
 import { nameKey } from '../db/exercises'
 import { emptyDraft } from '../workout/draft'
 import { getPreviousSets } from '../workout/previous'
@@ -19,6 +20,10 @@ export default function Workout() {
   const draft = useDraft()
   const { units, coachState } = useSettings()
   const { h, c, settings } = useCoaching()
+  const ready = useSettingsReady()
+  const [goalOpen, setGoalOpen] = useState(false)
+  // Ask about the goal once, after saved settings have loaded and there's some history to coach from.
+  useEffect(() => { if (ready && !settings.goal && !settings.goalAsked && h && !draft) setGoalOpen(true) }, [ready, settings.goal, settings.goalAsked, h, draft])
   const [open, setOpen] = useState<Routine | null>(null)
   const [example, setExample] = useState<ExampleTemplate | null>(null)
   const prev = useLiveQuery(async () => {
@@ -26,7 +31,7 @@ export default function Workout() {
     return getPreviousSets(routines.flatMap((r) => r.items.map((i) => i.exerciseId)))
   }, [h?.routines])
 
-  if (draft) return <ActiveWorkout draft={draft} />
+  if (draft) return <ActiveWorkout draft={draft} avgWeekly={c?.avgWeekly?.avg ?? null} />
   if (!h || !c || !prev) return <div className="space-y-3"><div className="skeleton h-12 w-52 rounded-xl" /><div className="skeleton h-14 rounded-2xl" /><div className="grid grid-cols-2 gap-3"><div className="skeleton h-32 rounded-2xl" /><div className="skeleton h-32 rounded-2xl" /></div></div>
 
   const have = new Set(h.routines.map((r) => nameKey(r.name)))
@@ -41,6 +46,13 @@ export default function Workout() {
         <div className="label">Quick start</div>
         <button className="btn btn-primary press w-full !min-h-[54px] text-[17px]" onClick={() => startDraft(emptyDraft(Date.now()))}>Start an Empty Workout</button>
       </section>
+
+      {!settings.goal && ready && (
+        <button onClick={() => setGoalOpen(true)} className="rise press card flex w-full items-center gap-3 text-left">
+          <span className="text-3xl" aria-hidden>🎯</span>
+          <span className="min-w-0 flex-1"><b className="block">What’s your main goal?</b><span className="text-sm text-mute">V-taper, glutes &amp; legs, or balanced. It tunes your weekly sets and tips.</span></span>
+        </button>
+      )}
 
       {c.suggestion && h.workouts.length > 0 && <SuggestionCard s={c.suggestion} h={h} counts={c.counts} settings={settings} />}
       {c.late && (
@@ -76,6 +88,7 @@ export default function Workout() {
         </section>
       )}
 
+      {goalOpen && <GoalSheet onClose={() => setGoalOpen(false)} />}
       {open && <TemplateSheet routine={open} exercises={h.exercises} prev={prev} units={units} deload={coachState.deload} onClose={() => setOpen(null)} />}
       {example && <ExampleSheet tpl={example} exercises={h.exercises} units={units} onClose={() => setExample(null)} />}
     </div>

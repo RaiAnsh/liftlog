@@ -73,3 +73,26 @@ input, select, textarea { font-size: 16px; }
   .skeleton { animation: none; }
   * { transition-duration: .01ms !important; }
 }
+
+/* ---- Fire ---------------------------------------------------------------------------------- */
+@keyframes fire-life { 0% { opacity: 0 } 8% { opacity: 1 } 78% { opacity: 1 } 100% { opacity: 0 } }
+@keyframes fire-in { 0% { transform: scale(.15) rotate(-14deg); opacity: 0 } 35% { transform: scale(1.45) rotate(7deg); opacity: 1 } 60% { transform: scale(.95) rotate(-4deg) } 100% { transform: scale(1.12) rotate(0) } }
+@keyframes flicker { 0%, 100% { transform: scale(1.1, 1.08) translateY(0) rotate(0) } 20% { transform: scale(1.16, 1.02) translateY(-5px) rotate(-3deg) } 45% { transform: scale(1.04, 1.16) translateY(3px) rotate(2deg) } 70% { transform: scale(1.14, 1.06) translateY(-3px) rotate(3deg) } }
+@keyframes ember { 0% { transform: translate(0, 30px) scale(.5) rotate(0); opacity: 0 } 15% { opacity: 1 } 100% { transform: translate(var(--ex), -300px) scale(1.15) rotate(var(--er)); opacity: 0 } }
+@keyframes title-slam { 0% { transform: scale(2.4); opacity: 0; letter-spacing: .2em } 55% { transform: scale(.94); opacity: 1 } 100% { transform: scale(1); letter-spacing: .02em } }
+@keyframes glow-pulse { 0%, 100% { opacity: .55 } 50% { opacity: .95 } }
+@keyframes shake { 0%, 100% { transform: translate(0) } 20% { transform: translate(-5px, 2px) } 40% { transform: translate(5px, -2px) } 60% { transform: translate(-4px, -2px) } 80% { transform: translate(3px, 2px) } }
+@keyframes chip-flicker { 0%, 100% { transform: scale(1) } 50% { transform: scale(1.12) } }
+
+.fire-overlay { animation: fire-life var(--dur, 2.4s) ease-out forwards; }
+.fire-big { animation: fire-in .7s cubic-bezier(.2, .9, .25, 1.2) both, flicker .5s .7s ease-in-out infinite; filter: drop-shadow(0 0 28px rgb(255 120 20 / .85)); }
+.fire-ember { position: absolute; bottom: 38%; animation: ember var(--ed, 1.6s) ease-out var(--edelay, 0s) both; }
+.fire-title { animation: title-slam .5s .25s cubic-bezier(.2, .9, .3, 1.1) both; background: linear-gradient(180deg, #fff6c2, #ffb21a 45%, #ff4d1a); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 1px rgb(120 30 0 / .35); }
+.fire-glow { animation: glow-pulse 1s ease-in-out infinite; background: radial-gradient(circle at 50% 58%, rgb(255 110 20 / .55), rgb(255 60 0 / .18) 40%, transparent 70%); }
+.fire-shake { animation: shake .45s .15s ease-in-out 2; }
+.chip-flicker { animation: chip-flicker .7s ease-in-out infinite; display: inline-block; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fire-overlay, .fire-big, .fire-ember, .fire-title, .fire-glow, .fire-shake, .chip-flicker { animation: none !important; }
+  .fire-overlay { opacity: 1; }
+}

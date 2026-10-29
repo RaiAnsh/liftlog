@@ -13,6 +13,11 @@ export async function setSetting<K extends keyof Settings>(key: K, value: Settin
   await d.settings.put({ key, value })
 }
 
+/** False until the saved settings have actually loaded (useSettings returns defaults until then). */
+export function useSettingsReady(): boolean {
+  return useLiveQuery(async () => { await getSettings(); return true }, [], false)
+}
+
 export function useSettings(): Settings {
   return useLiveQuery(() => getSettings(), [], DEFAULT_SETTINGS)
 }

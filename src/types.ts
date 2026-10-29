@@ -98,8 +98,14 @@ export interface Settings {
   program: number[]
   /** workouts you chose to skip, newest last */
   skipLog: SkipEntry[]
+  /** main training goal; sets how many weekly sets each muscle gets. null until you pick one */
+  goal: { id: GoalId; tiers: Record<Muscle, Tier> } | null
+  goalAsked: boolean
   coachState: CoachState
 }
+
+export type Tier = 'priority' | 'standard' | 'light'
+export type GoalId = 'vtaper' | 'glutes' | 'balanced' | 'custom'
 
 export interface SkipEntry {
   id: string
@@ -115,6 +121,8 @@ export interface CoachState {
   deload: Record<number, number>
   /** exerciseId -> number of sessions when the plateau card was dismissed */
   dismissed: Record<number, number>
+  /** coach suggestion id -> when you applied it, so it isn't shown again right away */
+  applied?: Record<string, number>
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -129,6 +137,8 @@ export const DEFAULT_SETTINGS: Settings = {
   installedAt: null,
   program: [],
   skipLog: [],
+  goal: null,
+  goalAsked: false,
   coachState: { deload: {}, dismissed: {} },
 }
 
@@ -140,6 +150,10 @@ export interface DraftSet {
   reps: number | null
   rpe: number | null
   completed: boolean
+  /** when it was completed (epoch ms), used for momentum streaks */
+  doneAt?: number
+  /** met its target (or the bottom of the rep range when there is no target) */
+  hit?: boolean
 }
 
 export interface DraftExercise {

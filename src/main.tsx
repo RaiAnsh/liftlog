@@ -5,6 +5,10 @@ import App from './App'
 import './index.css'
 import { loadDraft } from './workout/store'
 import { getSettings, setSetting } from './db/settings'
+import { maybeAutoRestorePoint } from './backup/restorePoint'
+
+// A rolling safety copy of your data (at most once a day) in a separate database; never blocks startup.
+setTimeout(() => { maybeAutoRestorePoint().catch(() => {}) }, 4000)
 
 // Ask the browser not to evict our data under storage pressure, and remember when we first ran.
 navigator.storage?.persist?.().catch(() => {})

@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useRef, useState } from 'react'
 import Sheet from './Sheet'
 import { backupFilename, createBackup, parseBackup, restoreBackup, shareOrDownload, summarize, type ParsedBackup } from '../backup/backup'
+import { listRestorePoints, restoreFromPoint, saveRestorePoint } from '../backup/restorePoint'
 import { exportStrongCsv, strongCsvFilename } from '../backup/strongCsv'
 import { db } from '../db/db'
 import { setSetting, useSettings } from '../db/settings'
@@ -13,7 +14,8 @@ const ago = (t: number) => { const d = Math.floor((Date.now() - t) / 86_400_000)
 export default function BackupSection() {
   const { lastBackupAt, units } = useSettings()
   const fileRef = useRef<HTMLInputElement>(null)
-  const [pending, setPending] = useState<Extract<ParsedBackup, { ok: true }> | null>(null)
+  const [pending, setPending] = useState<(Extract<ParsedBackup, { ok: true }> & { pointId?: string }) | null>(null)
+  const points = useLiveQuery(() => listRestorePoints())
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const current = useLiveQuery(async () => summarize({ exercises: await db.exercises.toArray(), routines: await db.routines.toArray(), workouts: await db.workouts.toArray(), sets: await db.sets.toArray(), settings: [] }))
@@ -50,7 +52,9 @@ export default function BackupSection() {
   async function confirmRestore() {
     if (!pending) return
     setBusy(true)
-    await restoreBackup(pending.file)
+    // Whatever you restore over is saved as a restore point first, so a restore can itself be undone.
+    if (pending.pointId) await restoreFromPoint(pending.pointId)
+    else { await saveRestorePoint('before-restore'); await restoreBackup(pending.file) }
     location.reload() // the workout in progress and all cached state were replaced; start clean
   }
 
@@ -74,6 +78,22 @@ export default function BackupSection() {
           </div>
         )}
       </div>
+
+      {points && points.length > 0 && (
+        <div className="card space-y-2">
+          <div className="font-semibold">Automatic restore points</div>
+          <p className="text-xs text-mute">ARLog quietly keeps a copy once a day (and before any restore). They guard against app mistakes and bad updates. They live on this phone, so exported backups are still your real safety net.</p>
+          {points.map((p) => (
+            <div key={p.id} className="flex items-center justify-between gap-2 rounded-xl bg-card2 px-3 py-2">
+              <div className="min-w-0 text-sm">
+                <div className="font-semibold">{new Date(p.at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}{p.reason === 'before-restore' ? ' · before a restore' : ''}</div>
+                <div className="text-xs text-mute">{p.summary.workouts} workouts · {p.summary.sets} sets</div>
+              </div>
+              <button className="press rounded-lg px-3 py-2 text-sm font-semibold text-accent" onClick={() => { const r = parseBackup(p.json); if (r.ok) setPending({ ...r, pointId: p.id }) }}>Restore</button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {pending && current && (
         <Sheet title="Restore this backup?" onClose={() => setPending(null)}>

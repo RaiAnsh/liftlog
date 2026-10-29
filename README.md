@@ -1,8 +1,8 @@
-# LiftLog
+# ARLog
 
-A free workout tracker that runs in your phone's browser, works offline, and keeps your data on your phone.
-It replaces Strong: it imports your full Strong history, then adds coaching (next-session targets, weekly
-muscle volume, skip warnings, plateau detection).
+A free workout tracker built around **muscle growth** that runs in your phone's browser, works offline, and keeps your data on your phone.
+It replaces Strong: it imports your full Strong history, then adds a hypertrophy coach (next-session targets, goal-based weekly
+volume, "do this next time" tips, program review, plateau detection).
 
 - **No account, no backend, no cost.** Everything is stored on your device (IndexedDB).
 - **Installs like an app** on iPhone via Safari → Add to Home Screen, and works in airplane mode.
@@ -17,13 +17,13 @@ muscle volume, skip warnings, plateau detection).
 
 1. Open the app's link in **Safari** (it must be Safari, not Chrome).
 2. Tap the **Share** button → **Add to Home Screen** → **Add**.
-3. Open **LiftLog** from your Home Screen. After the first load it works offline.
+3. Open **ARLog** from your Home Screen. After the first load it works offline.
 
 ## Bring your history over from Strong
 
 1. In the Strong app: **Profile → Settings → Export Strong Data** (wording can vary by version). Strong emails or
    saves a `strong_workouts.csv` file. Put it somewhere your phone can open (Files, iCloud Drive, or email it to yourself).
-2. In LiftLog: **Settings → Import from Strong**, choose the CSV.
+2. In ARLog: **Settings → Import from Strong**, choose the CSV.
 3. Pick the unit your Strong weights were in (**lb or kg**; the file doesn't say), check the preview, and tap **Import**.
 4. If a few exercises need muscle tags, open **Review muscle tags** and tap the muscles. Coaching counts sets per muscle, so this matters.
 
@@ -57,9 +57,33 @@ Tips:
 - **Stalled lift:** no gain in top weight or estimated 1RM (Epley, sets of 12 reps or fewer) across the last 3 sessions.
 - **Fatigue signal:** only with RPE data. The same weight × reps feels 1+ RPE harder than two weeks ago on 2 or more lifts.
 
+## Your goal and the hypertrophy coach
+
+On first use ARLog asks what you want to build: **Upper-body V-taper**, **Glutes & legs**, **Balanced**, or a custom per-muscle mix. That
+sets how many hard sets each muscle should get per week (priority 14–22, standard 10–16, maintain 5–9; all editable).
+
+- **In a workout** each exercise can show a 💡 tip for next time: add a set, trim a set, move to a heavier weight, rest longer when reps collapse,
+  or split a big session. Every tip has a **Why?** link.
+- **Profile → Coach** reviews your last few training weeks and flags muscles short of your goal, with one-tap fixes such as
+  "Add 3 sets of Lateral Raise to Push" (it edits your template).
+- **🔥 Momentum:** hit your targets three sets in a row and the screen erupts; five and eight in a row (and PRs) make it bigger.
+- **The science** page lists the research behind each rule, what it found, and its limits. Summaries are the app author's, not medical advice.
+
+## Your data and updates
+
+Everything you log lives in your phone's browser storage (IndexedDB) for this site. **Updating the app never touches it**: updates replace
+the code files only, the database is opened and (if needed) upgraded in place, and tests guard that path. What *can* lose data:
+
+- **Deleting the app icon** (or clearing Safari website data) wipes its storage. So: **install to the Home Screen first, then import inside that app.**
+  Storage in a Safari tab and in the installed app are separate, and Safari tabs can be cleared after a week of inactivity, while installed
+  Home Screen apps are exempt from that rule.
+- **Changing the site address** (e.g. renaming the GitHub repo) makes your phone look at a different place. Don't rename the repo.
+- Phone storage being wiped. That's what **Export backup** is for. ARLog also keeps three automatic restore points on the phone (daily, and
+  before any restore) in a second database; those guard against app mistakes, not against the whole site's storage being cleared.
+
 ## Back up your data
 
-Your data exists only on your phone, so use **Settings → Export backup** now and then (LiftLog reminds you every 14 days).
+Your data exists only on your phone, so use **Settings → Export backup** now and then (ARLog reminds you every 14 days).
 The share sheet lets you save it to Files / iCloud Drive. To move to a new phone, install the app there and use
 **Restore from backup**. You can also export your workouts as a Strong-format CSV.
 

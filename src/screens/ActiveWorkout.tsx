@@ -8,8 +8,11 @@ import ExerciseThumb from '../components/ExerciseThumb'
 import PlateCalculator from '../components/PlateCalculator'
 import WarmupSheet from '../components/WarmupSheet'
 import { describeTarget, metTarget, nextTarget, targetForSet, type Target } from '../coaching/targets'
+import { exerciseAdvice, plannedSetsFor, type Advice } from '../coaching/hypertrophy'
+import type { MuscleCounts } from '../coaching/volume'
 import { livePR, type Bests } from '../lib/prs'
-import { showToast } from '../lib/toast'
+import { showFire } from '../lib/fire'
+import { fireFor, isHit, streakOf } from '../workout/momentum'
 import Sheet, { SheetRow } from '../components/Sheet'
 import { fmtClock, useNow } from '../lib/useNow'
 import { formatWeight, toKg } from '../units'
@@ -70,9 +73,12 @@ function SetRow({ ex, set, index, prev, units, bests, target }: { ex: DraftExerc
       .filter((x) => x.uid !== set.uid && x.completed && x.type !== 'warmup')
       .map((x) => ({ weightKg: x.weightKg ?? 0, reps: x.reps ?? 0 }))
     const pr = done.completed && done.type !== 'warmup' ? livePR(bests, earlier, done.weightKg ?? 0, done.reps ?? 0) : null
-    if (pr) {
-      showToast('🏆 New PR!', { kind: 'pr', sub: pr === 'e1rm' ? 'Best estimated 1RM yet' : 'Heaviest weight yet' })
-      navigator.vibrate?.([30, 40, 30])
+    if (done.completed && done.type !== 'warmup') {
+      // Remember whether this set was on target, then see if the streak just hit a fire milestone.
+      const hit = isHit(done, tg, ex.repMin)
+      updateDraft((d) => updateSet(d, ex.uid, set.uid, { hit, doneAt: Date.now() }))
+      const fire = fireFor(streakOf(getD()), !!pr)
+      if (fire) { showFire(fire); navigator.vibrate?.([40, 50, 40, 50, 80]) } else if (pr) { showFire(fireFor(0, true)!); navigator.vibrate?.([30, 40, 30]) } else navigator.vibrate?.(8)
     } else navigator.vibrate?.(8)
   }
 
@@ -106,9 +112,10 @@ function SetRow({ ex, set, index, prev, units, bests, target }: { ex: DraftExerc
 
 const getD = () => getDraft()!
 
-function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests, target }: {
-  ex: DraftExercise; def: Exercise | undefined; prev: WorkoutSet[] | undefined; units: Unit; index: number; total: number; supersetLabel: string | null; bests: Bests | undefined; target: Target | null
+function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests, target, advice }: {
+  ex: DraftExercise; def: Exercise | undefined; prev: WorkoutSet[] | undefined; units: Unit; index: number; total: number; supersetLabel: string | null; bests: Bests | undefined; target: Target | null; advice: Advice[]
 }) {
+  const nav = useNavigate()
   const [menu, setMenu] = useState(false)
   const [swap, setSwap] = useState(false)
   const [warm, setWarm] = useState(false)
@@ -136,6 +143,12 @@ function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests
           <div className="text-xs text-mute">{target.reason}</div>
         </div>
       )}
+      {advice.map((a) => (
+        <div key={a.id} className="mb-2 flex gap-2 rounded-xl bg-warn/10 px-3 py-2 text-xs leading-snug">
+          <span aria-hidden>💡</span>
+          <span>{a.text} <button className="font-semibold text-accent" onClick={() => nav(`/science?s=${a.sci}`)}>Why?</button></span>
+        </div>
+      ))}
       <input
         value={ex.notes} onChange={(e) => pat({ notes: e.target.value })} placeholder="Add note…"
         className="mb-2 w-full bg-transparent px-1 text-sm outline-none placeholder:text-mute/70"
@@ -183,9 +196,9 @@ function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests
   )
 }
 
-export default function ActiveWorkout({ draft }: { draft: Draft }) {
+export default function ActiveWorkout({ draft, avgWeekly = null }: { draft: Draft; avgWeekly?: MuscleCounts | null }) {
   const nav = useNavigate()
-  const { units, defaultRestSeconds, coachState } = useSettings()
+  const { units, defaultRestSeconds, coachState, weeklyTargets } = useSettings()
   const now = useNow(1000)
   const [adding, setAdding] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -205,6 +218,16 @@ export default function ActiveWorkout({ draft }: { draft: Draft }) {
     }
     return m
   }, [draft.exercises, exMap, prev, units, coachState])
+
+  // Hypertrophy tips per exercise: from last session, your typical weekly volume, and how much you've stacked today.
+  const advice = useMemo(() => {
+    const m = new Map<string, Advice[]>()
+    for (const ex of draft.exercises) {
+      const def = exMap?.get(ex.exerciseId)
+      m.set(ex.uid, def ? exerciseAdvice({ exercise: def, last: prev?.get(ex.exerciseId), avgWeekly, targets: weeklyTargets, plannedToday: def.primaryMuscles[0] ? plannedSetsFor(draft, exMap!, def.primaryMuscles[0]) : 0 }) : [])
+    }
+    return m
+  }, [draft, exMap, prev, avgWeekly, weeklyTargets])
 
   const groups = [...new Set(draft.exercises.map((e) => e.superset).filter((g): g is number => g !== null))]
 
@@ -245,7 +268,7 @@ export default function ActiveWorkout({ draft }: { draft: Draft }) {
       {draft.exercises.length === 0 && <div className="card text-center text-mute">Add your first exercise to get started.</div>}
 
       {draft.exercises.map((ex, i) => (
-        <ExerciseCard key={ex.uid} ex={ex} def={exMap?.get(ex.exerciseId)} prev={prev?.get(ex.exerciseId)} bests={bests?.get(ex.exerciseId)} target={targets.get(ex.uid) ?? null} units={units}
+        <ExerciseCard key={ex.uid} ex={ex} def={exMap?.get(ex.exerciseId)} prev={prev?.get(ex.exerciseId)} bests={bests?.get(ex.exerciseId)} target={targets.get(ex.uid) ?? null} advice={advice.get(ex.uid) ?? []} units={units}
           index={i} total={draft.exercises.length}
           supersetLabel={ex.superset === null ? null : String.fromCharCode(65 + groups.indexOf(ex.superset))} />
       ))}

@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { fmtClock, useNow } from '../lib/useNow'
-import { adjustRest } from '../workout/draft'
+import { adjustRest, completedSetCount } from '../workout/draft'
+import { restPhrase, streakOf } from '../workout/momentum'
 import { updateDraft, useDraft } from '../workout/store'
 
 /** How long the "rest over" state stays visible before clearing itself. */
@@ -32,6 +33,7 @@ export default function ActiveBar() {
   const left = rest ? rest.endsAt - now : 0
   const done = !!rest && left <= 0
   const onWorkout = pathname === '/workout'
+  const streak = streakOf(draft)
 
   return (
     <div className="fixed inset-x-0 z-30 mx-auto max-w-xl space-y-2 px-3" style={{ bottom: `calc(${BAR_BOTTOM} + 8px)` }}>
@@ -41,7 +43,9 @@ export default function ActiveBar() {
             <button className="btn !min-h-[44px] !px-3 !text-[15px]" onClick={() => updateDraft((d) => adjustRest(d, -15, Date.now()))}>−15</button>
             <div className="flex-1 text-center">
               <div className="num text-[26px] font-extrabold leading-none">{done ? 'Go!' : fmtClock(Math.ceil(left / 1000) * 1000)}</div>
-              <div className={`text-[11px] font-semibold uppercase tracking-wider ${done ? 'text-white/90' : 'text-mute'}`}>{done ? 'Rest over' : 'Rest'}</div>
+              <div className={`truncate text-[11px] font-semibold uppercase tracking-wider ${done ? 'text-white/90' : streak >= 2 ? 'text-warn' : 'text-mute'}`}>
+                {done ? 'Rest over' : streak >= 2 ? <span className="chip-flicker">🔥 {streak} in a row</span> : `Rest · ${restPhrase(completedSetCount(draft))}`}
+              </div>
             </div>
             <button className="btn !min-h-[44px] !px-3 !text-[15px]" onClick={() => updateDraft((d) => adjustRest(d, 15, Date.now()))}>+15</button>
             <button className="btn !min-h-[44px] !px-3 !text-[15px]" onClick={() => updateDraft((d) => ({ ...d, rest: null }))}>{done ? 'Dismiss' : 'Skip'}</button>

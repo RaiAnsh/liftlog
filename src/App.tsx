@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { useSettings } from './db/settings'
 import Profile from './screens/Profile'
+import Science from './screens/Science'
 import History from './screens/History'
 import WorkoutDetail from './screens/WorkoutDetail'
 import Exercises from './screens/Exercises'
@@ -11,6 +12,7 @@ import Routines from './screens/Routines'
 import RoutineEdit from './screens/RoutineEdit'
 import ActiveBar from './components/ActiveBar'
 import ToastHost from './components/ToastHost'
+import FireHost from './components/FireHost'
 import Plates from './screens/Plates'
 import { useDraft } from './workout/store'
 import Settings from './screens/Settings'
@@ -42,6 +44,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/workout" replace />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/science" element={<Science />} />
           <Route path="/workout" element={<Workout />} />
           <Route path="/routines" element={<Routines />} />
           <Route path="/routine/:id" element={<RoutineEdit />} />
@@ -58,6 +61,7 @@ export default function App() {
         </PageTransition>
       </main>
       <ToastHost />
+      <FireHost />
       <ActiveBar />
       <nav
         className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-bg/85 backdrop-blur-xl"

@@ -72,7 +72,7 @@ describe('backup and restore', () => {
 
   it('rejects files that are not valid backups, with plain-English reasons', () => {
     expect(parseBackup('not json')).toMatchObject({ ok: false, error: expect.stringContaining('readable') })
-    expect(parseBackup('{"hello":1}')).toMatchObject({ ok: false, error: expect.stringContaining('LiftLog backup') })
+    expect(parseBackup('{"hello":1}')).toMatchObject({ ok: false, error: expect.stringContaining('ARLog backup') })
     expect(parseBackup(JSON.stringify({ format: 'liftlog-backup', tables: {} }))).toMatchObject({ ok: false, error: expect.stringContaining('version') })
     expect(parseBackup(JSON.stringify({ format: 'liftlog-backup', schemaVersion: SCHEMA_VERSION, tables: { exercises: [] } }))).toMatchObject({ ok: false, error: expect.stringContaining('missing') })
   })

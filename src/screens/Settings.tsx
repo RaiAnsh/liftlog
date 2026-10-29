@@ -4,6 +4,9 @@ import { BackBar, Title } from '../components/PageHeader'
 import { ChevronRight } from '../components/Icons'
 import BackupSection from '../components/BackupSection'
 import InstallHint from '../components/InstallHint'
+import GoalSheet from '../components/GoalSheet'
+import { goalLabel } from '../coaching/goals'
+import { useState } from 'react'
 
 const PLATE_OPTIONS = { lb: [100, 55, 45, 35, 25, 15, 10, 5, 2.5, 1.25], kg: [25, 20, 15, 10, 5, 2.5, 1.25, 0.5] }
 
@@ -26,11 +29,19 @@ const LinkRow = ({ to, children }: { to: string; children: React.ReactNode }) =>
 
 export default function Settings() {
   const s = useSettings()
+  const [goalOpen, setGoalOpen] = useState(false)
   return (
     <div className="space-y-5">
       <BackBar />
       <Title>Settings</Title>
       <InstallHint />
+      <section className="space-y-2">
+        <div className="label px-1">Training</div>
+        <div className="overflow-hidden rounded-2xl bg-card">
+          <button onClick={() => setGoalOpen(true)} className="row-press flex w-full items-center justify-between px-4 py-3.5 text-left"><span>Training goal <span className="text-mute">· {goalLabel(s.goal) ?? 'not set'}</span></span><span className="text-mute"><ChevronRight /></span></button>
+          <LinkRow to="/science">The science behind ARLog</LinkRow>
+        </div>
+      </section>
       <BackupSection />
       <section className="space-y-2">
         <div className="label px-1">Units</div>
@@ -78,6 +89,7 @@ export default function Settings() {
         </div>
       </section>
       <p className="px-1 text-xs text-mute">Exercise images and instructions: free-exercise-db (public domain).</p>
+      {goalOpen && <GoalSheet onClose={() => setGoalOpen(false)} />}
     </div>
   )
 }

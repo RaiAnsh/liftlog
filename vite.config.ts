@@ -16,8 +16,8 @@ export default defineConfig({
       includeAssets: ['icons/apple-touch-icon.png', 'icons/favicon-64.png'],
       manifest: {
         id: base,
-        name: 'LiftLog',
-        short_name: 'LiftLog',
+        name: 'ARLog',
+        short_name: 'ARLog',
         description: 'Offline workout tracker with rule-based coaching. Your data stays on your phone.',
         theme_color: '#0b0d10',
         background_color: '#0b0d10',
