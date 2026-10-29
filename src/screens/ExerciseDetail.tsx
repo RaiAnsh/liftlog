@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { db } from '../db/db'
 import { buildExercise, nameKey } from '../db/exercises'
 import { useSettings } from '../db/settings'
-import { imageUrl, instructionsFor, PLANET_FITNESS_LIBRARY } from '../data/images'
+import { imageUrl, instructionsFor, GYM_LIBRARY } from '../data/images'
 import { BackBar } from '../components/PageHeader'
 import PlateauCard from '../components/coaching/PlateauCard'
 import { useCoaching } from '../coaching/useCoaching'
@@ -36,7 +36,7 @@ export default function ExerciseDetail() {
   }, [key])
   if (!data) return <p className="text-mute">Loading…</p>
 
-  const libName = PLANET_FITNESS_LIBRARY.find((n) => nameKey(n) === key)
+  const libName = GYM_LIBRARY.find((n) => nameKey(n) === key)
   const name = data.ex?.name ?? libName ?? key
   const proto = data.ex ?? buildExercise(name, units)
   const imgs = [imageUrl(name, 0), imageUrl(name, 1)].filter(Boolean) as string[]
@@ -96,7 +96,6 @@ export default function ExerciseDetail() {
           <div className="flex flex-wrap gap-2">
             {proto.primaryMuscles.map((m) => <span key={m} className="chip chip-on flex items-center">{MUSCLE_LABELS[m]}</span>)}
             {proto.secondaryMuscles.map((m) => <span key={m} className="chip flex items-center">{MUSCLE_LABELS[m]}</span>)}
-            {PLANET_FITNESS_LIBRARY.some((n) => nameKey(n) === key) && <span className="chip flex items-center text-[#c9a2ff]">Planet Fitness</span>}
           </div>
           {steps.length > 0 && (
             <section>

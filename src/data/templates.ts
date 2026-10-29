@@ -8,7 +8,7 @@ export interface ExampleTemplate { id: string; name: string; blurb: string; item
 const t = (name: string, sets = 3, repMin = 8, repMax = 12, rest = 90): TemplateItem => ({ name, sets, repMin, repMax, rest })
 
 /**
- * Starter templates built from what a Planet Fitness floor has (machines, cables, Smith machine, dumbbells).
+ * Starter templates built from what a typical commercial gym has (machines, cables, Smith machine, dumbbells).
  * They're ordinary templates once added: rename, reorder or swap anything.
  */
 export const EXAMPLE_TEMPLATES: ExampleTemplate[] = [

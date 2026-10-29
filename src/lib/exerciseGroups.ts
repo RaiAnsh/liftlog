@@ -2,7 +2,7 @@ import type { Muscle } from '../types'
 import type { ExerciseItem } from './useExerciseItems'
 
 export type GroupId = 'push' | 'pull' | 'legs' | 'core' | 'other'
-export type Scope = 'all' | 'mine' | 'pf'
+export type Scope = 'all' | 'mine' | 'library'
 
 export interface Section { id: string; label: string; muscles: Muscle[] }
 export interface Group { id: GroupId; label: string; blurb: string; color: string; sections: Section[] }
@@ -57,7 +57,7 @@ export function locate(primary: Muscle[]): { group: Group; section: Section } {
 export interface OrganizedSection { group: Group; section: Section; items: ExerciseItem[] }
 
 /**
- * Filters by search text and scope (everything / mine / Planet Fitness), then files each exercise under
+ * Filters by search text and scope (everything / mine / built-in library), then files each exercise under
  * its group and muscle section. Empty sections are dropped; within a section the most-used come first.
  */
 export function organize(items: ExerciseItem[], o: { query?: string; scope?: Scope; group?: GroupId | 'all' }): OrganizedSection[] {
@@ -67,7 +67,7 @@ export function organize(items: ExerciseItem[], o: { query?: string; scope?: Sco
   for (const it of items) {
     if (q && !it.name.toLowerCase().includes(q)) continue
     if (scope === 'mine' && !it.mine) continue
-    if (scope === 'pf' && !it.pf) continue
+    if (scope === 'library' && !it.lib) continue
     const { group, section } = locate(it.muscles)
     if (o.group && o.group !== 'all' && group.id !== o.group) continue
     const key = `${group.id}/${section.id}`

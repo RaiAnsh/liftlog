@@ -1,7 +1,7 @@
 import instructions from './instructions.json'
 import { IMAGE_IDS } from './exerciseImages'
 
-export { PLANET_FITNESS_LIBRARY } from './exerciseImages'
+export { GYM_LIBRARY } from './exerciseImages'
 
 const norm = (n: string) => n.trim().toLowerCase().replace(/\s+/g, ' ')
 

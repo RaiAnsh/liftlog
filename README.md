@@ -6,9 +6,9 @@ volume, "do this next time" tips, program review, plateau detection).
 
 - **No account, no backend, no cost.** Everything is stored on your device (IndexedDB).
 - **Installs like an app** on iPhone via Safari → Add to Home Screen, and works in airplane mode.
-- **Body-figure diagrams and how-to steps** for exercises (form photos on request), including a library of Planet Fitness machines.
+- **Body-figure diagrams and how-to steps** for exercises (form photos on request), including a built-in library of common gym machines and cables.
 
-> **Not included:** Apple Health sync and live machine data (Planet Fitness machines and Safari web apps
+> **Not included:** Apple Health sync and live machine data (gym machines and Safari web apps
 > can't talk to each other). Your Strong history and everything you log here stays on the phone.
 
 ---
@@ -38,7 +38,7 @@ The tabs match Strong: **Profile · History · Workout · Exercises**.
 | **Profile** | Weekly chart, "best right now / work on this / best lift", muscle map, records, stalled lifts, weekly review. Gear → Settings |
 | **History** | Every workout (and skipped day 😢), searchable. "Start again" or "Save as template" from any of them |
 | **Workout** | Start an empty workout, your "Up next" suggestion (with **Skip 😢**), your templates, and example templates (Push, Pull, Legs, Shoulders, Upper, Lower, Arms) |
-| **Exercises** | The full library with body-figure diagrams, search, and Planet Fitness machines |
+| **Exercises** | The full library with body-figure diagrams, search, and a built-in library of common machines |
 
 Tips:
 - **Templates:** add an example (Push, Pull, Legs, Shoulders…) from the Workout tab, or open a past workout in History and choose **Save as template**.

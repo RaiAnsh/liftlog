@@ -112,8 +112,8 @@ export const IMAGE_IDS: Record<string, string> = {
  "wrist rotation": "Wrist_Rotations_with_Straight_Bar"
 }
 
-/** Machines and equipment found on a typical Planet Fitness floor. */
-export const PLANET_FITNESS_LIBRARY: string[] = [
+/** Common gym machines and equipment (the built-in library offered in the exercise picker). */
+export const GYM_LIBRARY: string[] = [
  "Chest Press (Machine)",
  "Incline Chest Press (Machine)",
  "Shoulder Press (Machine)",

@@ -4,12 +4,12 @@ import { guessMuscles } from '../import/exerciseMap'
 import type { ExerciseItem } from '../lib/useExerciseItems'
 import ExerciseBrowser from './ExerciseBrowser'
 
-const item = (name: string, sets = 0, o: Partial<ExerciseItem> = {}): ExerciseItem => ({ key: name.toLowerCase(), name, muscles: guessMuscles(name).primary, mine: true, pf: false, sets, ...o })
+const item = (name: string, sets = 0, o: Partial<ExerciseItem> = {}): ExerciseItem => ({ key: name.toLowerCase(), name, muscles: guessMuscles(name).primary, mine: true, lib: false, sets, ...o })
 const html = (items: ExerciseItem[] | undefined) => renderToStaticMarkup(<ExerciseBrowser items={items} renderRow={(i) => <span data-row>{i.name}</span>} />)
 
 describe('ExerciseBrowser (organised picker)', () => {
   const chest = ['Bench Press (Smith Machine)', 'Chest Press (Machine)', 'Incline Chest Press (Machine)', 'Pec Deck (Machine)', 'Cable Crossover', 'Push Up'].map((n, i) => item(n, 60 - i * 5))
-  const items = [...chest, item('Lat Pulldown (Cable)', 40), item('Leg Press', 30, { pf: true }), item('Crunch (Machine)', 5)]
+  const items = [...chest, item('Lat Pulldown (Cable)', 40), item('Leg Press', 30, { lib: true }), item('Crunch (Machine)', 5)]
 
   it('shows the Push / Pull / Legs / Core switcher with counts', () => {
     const h = html(items)

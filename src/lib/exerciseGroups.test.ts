@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { guessMuscles } from '../import/exerciseMap'
 import { EXAMPLE_TEMPLATES } from '../data/templates'
-import { PLANET_FITNESS_LIBRARY } from '../data/images'
+import { GYM_LIBRARY } from '../data/images'
 import { locate, organize } from './exerciseGroups'
 import type { ExerciseItem } from './useExerciseItems'
 
-const item = (name: string, o: Partial<ExerciseItem> = {}): ExerciseItem => ({ key: name.toLowerCase(), name, muscles: guessMuscles(name).primary, mine: true, pf: false, sets: 0, ...o })
+const item = (name: string, o: Partial<ExerciseItem> = {}): ExerciseItem => ({ key: name.toLowerCase(), name, muscles: guessMuscles(name).primary, mine: true, lib: false, sets: 0, ...o })
 
 describe('filing exercises under Push / Pull / Legs / Core', () => {
   it('files by first primary muscle', () => {
@@ -19,15 +19,15 @@ describe('filing exercises under Push / Pull / Legs / Core', () => {
     expect(locate([]).group.id).toBe('other')
   })
 
-  it('every Planet Fitness machine and example-template exercise lands in a real group', () => {
-    for (const n of [...PLANET_FITNESS_LIBRARY, ...EXAMPLE_TEMPLATES.flatMap((t) => t.items.map((i) => i.name))]) {
+  it('every built-in library machine and example-template exercise lands in a real group', () => {
+    for (const n of [...GYM_LIBRARY, ...EXAMPLE_TEMPLATES.flatMap((t) => t.items.map((i) => i.name))]) {
       expect(locate(guessMuscles(n).primary).group.id, n).not.toBe('other')
     }
   })
 
   const items = [
     item('Bench Press (Smith Machine)', { sets: 50 }), item('Pec Deck (Machine)', { sets: 10 }), item('Lateral Raise (Dumbbell)', { sets: 30 }),
-    item('Lat Pulldown (Cable)', { sets: 40 }), item('Leg Press', { sets: 20, pf: true }), item('Crunch (Machine)', { sets: 5, pf: true, mine: false }),
+    item('Lat Pulldown (Cable)', { sets: 40 }), item('Leg Press', { sets: 20, lib: true }), item('Crunch (Machine)', { sets: 5, lib: true, mine: false }),
     item('Running (Treadmill)', { sets: 2 }),
   ]
 
@@ -46,8 +46,8 @@ describe('filing exercises under Push / Pull / Legs / Core', () => {
     expect(organize(items, { query: ' RAISE ' }).flatMap((s) => s.items.map((i) => i.name))).toEqual(['Lateral Raise (Dumbbell)'])
     expect(organize(items, { query: 'zzz' })).toEqual([])
   })
-  it('filters by scope: mine vs Planet Fitness', () => {
-    expect(organize(items, { scope: 'pf' }).flatMap((s) => s.items.map((i) => i.name)).sort()).toEqual(['Crunch (Machine)', 'Leg Press'])
+  it('filters by scope: mine vs built-in library', () => {
+    expect(organize(items, { scope: 'library' }).flatMap((s) => s.items.map((i) => i.name)).sort()).toEqual(['Crunch (Machine)', 'Leg Press'])
     const mine = organize(items, { scope: 'mine' }).flatMap((s) => s.items.map((i) => i.name))
     expect(mine).not.toContain('Crunch (Machine)')
     expect(mine).toContain('Leg Press')

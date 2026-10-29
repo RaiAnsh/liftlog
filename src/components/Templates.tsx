@@ -82,7 +82,7 @@ export function ExampleSheet({ tpl, exercises, units, onClose }: { tpl: ExampleT
   const byName = new Map([...exercises.values()].map((e) => [e.nameKey, e]))
   return (
     <Sheet title={tpl.name} onClose={onClose}>
-      <p className="mb-3 text-center text-sm text-mute">{tpl.blurb}. Built from machines and cables you’ll find at Planet Fitness.</p>
+      <p className="mb-3 text-center text-sm text-mute">{tpl.blurb}. Built from common gym machines, cables and dumbbells; swap anything for what your gym has.</p>
       <div className="mb-3 space-y-1">
         {tpl.items.map((it, k) => {
           const mine = byName.get(it.name.toLowerCase())

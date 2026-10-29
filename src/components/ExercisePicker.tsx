@@ -49,7 +49,6 @@ export default function ExercisePicker({ multi, onPick, onClose }: { multi?: boo
                 <div className="truncate font-medium">{i.name}</div>
                 <div className="truncate text-sm text-mute">{i.muscles.map((m) => MUSCLE_LABELS[m]).join(', ') || 'No muscles tagged'}{i.sets ? ` · ${i.sets} sets` : ''}</div>
               </div>
-              {i.pf && <span className="rounded-md bg-[#5b2a86]/30 px-1.5 py-0.5 text-[10px] font-bold text-[#c9a2ff]">PF</span>}
               {multi && <span className={`flex h-6 w-6 items-center justify-center rounded-full border text-sm transition ${on ? 'pop border-transparent bg-accent text-white' : 'border-line'}`}>{on ? '✓' : ''}</span>}
             </button>
           )

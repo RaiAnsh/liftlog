@@ -3,7 +3,7 @@ import { GROUPS, organize, type GroupId, type Scope } from '../lib/exerciseGroup
 import type { ExerciseItem } from '../lib/useExerciseItems'
 import { SearchIcon } from './Icons'
 
-const SCOPES: [Scope, string][] = [['all', 'Everything'], ['mine', 'My exercises'], ['pf', 'Planet Fitness']]
+const SCOPES: [Scope, string][] = [['all', 'Everything'], ['mine', 'My exercises'], ['library', 'Library']]
 const TABS: { id: GroupId | 'all'; label: string; color?: string }[] = [{ id: 'all', label: 'All' }, ...GROUPS.filter((g) => g.id !== 'other').map((g) => ({ id: g.id, label: g.label, color: g.color }))]
 
 /**
