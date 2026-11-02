@@ -15,7 +15,7 @@ const range = (ws: number) => {
 
 /** Sessions, hard sets, muscles in/under range, PRs and stalled lifts for one week. */
 export default function WeeklySummaryCard({ h, settings, weekStart, now, title }: { h: History; settings: Settings; weekStart: number; now: number; title: string }) {
-  const s = useMemo(() => weeklySummary(h, weekStart, settings.weeklyTargets, now, settings.skipLog), [h, weekStart, settings.weeklyTargets, now, settings.skipLog])
+  const s = useMemo(() => weeklySummary(h, weekStart, settings.weeklyTargets, now, settings.skipLog, { cutting: settings.phase === 'cut' }), [h, weekStart, settings.weeklyTargets, now, settings.skipLog, settings.phase])
   const stat = (v: number, l: string, emoji = '') => (
     <div className="flex-1 rounded-xl bg-card2 px-2 py-2.5 text-center"><div className="num text-xl font-bold"><CountUp value={v} />{emoji}</div><div className="text-[11px] text-mute">{l}</div></div>
   )

@@ -115,3 +115,18 @@ describe.skipIf(!existsSync(real))('real Strong export', () => {
     console.log(found.map((c) => `${c.name} x${c.sessions}: ${c.items.map((i) => `${i.name.replace(/ \(.*\)/, '')} ${i.sets}x${i.repMin}-${i.repMax}`).join(', ')}`))
   })
 })
+
+describe('top of rep range (default 12, adjustable)', () => {
+  const mk = (reps: number) => { const w = [wk('A', 1), wk('A', 3), wk('A', 5)]; return { workouts: w, sets: w.flatMap((x) => [set(x, 1, reps), set(x, 1, reps)]), exercises: exMap } }
+  it('never builds a range that tops out above the lifter\'s ceiling for someone who trains up to 12', () => {
+    for (const r of [8, 10, 11, 12]) expect(inferTemplates(mk(r), { now })[0].items[0].repMax, `typical ${r}`).toBe(12)
+    expect(inferTemplates(mk(13), { now })[0].items[0].repMax).toBe(12) // 13 is "about 12": still the lifter's 8-12 style
+  })
+  it('honours a different ceiling', () => {
+    expect(inferTemplates(mk(9), { now, repCeiling: 10 })[0].items[0]).toMatchObject({ repMin: 6, repMax: 10 })
+    expect(inferTemplates(mk(14), { now, repCeiling: 15 })[0].items[0]).toMatchObject({ repMin: 10, repMax: 15 })
+  })
+  it('still builds a high-rep range for someone who really trains 18+', () => {
+    expect(inferTemplates(mk(18), { now })[0].items[0].repMax).toBeGreaterThan(12)
+  })
+})

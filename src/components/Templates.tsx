@@ -32,8 +32,8 @@ export function TemplateCard({ title, lines, extra, onClick, index = 0, dashed }
 const fmtW = (u: Unit) => (kg: number) => `${formatWeight(kg, u)} ${u}`
 
 /** Preview of one of your templates, with next-session targets, and a Start button. */
-export function TemplateSheet({ routine, exercises, prev, units, deload, onClose }: {
-  routine: Routine; exercises: Map<number, Exercise>; prev: Map<number, WorkoutSet[]>; units: Unit; deload: Record<number, number>; onClose: () => void
+export function TemplateSheet({ routine, exercises, prev, units, deload, hold, onClose }: {
+  routine: Routine; exercises: Map<number, Exercise>; prev: Map<number, WorkoutSet[]>; units: Unit; deload: Record<number, number>; hold?: boolean; onClose: () => void
 }) {
   const nav = useNavigate()
   return (
@@ -41,7 +41,7 @@ export function TemplateSheet({ routine, exercises, prev, units, deload, onClose
       <div className="mb-3 space-y-1">
         {routine.items.map((it, k) => {
           const e = exercises.get(it.exerciseId)
-          const t = e && !isCardio(e) ? nextTarget(prev.get(it.exerciseId), { repMin: it.repRangeMin, repMax: it.repRangeMax, incrementKg: e.weightIncrement, fmt: fmtW(units), deload: it.exerciseId in deload }) : null
+          const t = e && !isCardio(e) ? nextTarget(prev.get(it.exerciseId), { repMin: it.repRangeMin, repMax: it.repRangeMax, incrementKg: e.weightIncrement, fmt: fmtW(units), deload: it.exerciseId in deload, hold }) : null
           return (
             <div key={k} className="rise flex items-center gap-3 rounded-xl py-1.5" style={{ ['--i' as string]: k }}>
               <ExerciseThumb name={e?.name ?? '?'} muscles={e?.primaryMuscles} secondary={e?.secondaryMuscles} size={44} />

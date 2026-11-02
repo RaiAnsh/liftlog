@@ -64,8 +64,9 @@ export default function Profile() {
       {h.workouts.length === 0 && (
         <div className="card space-y-3 text-center">
           <p className="text-lg font-semibold">Welcome to LiftLog</p>
-          <p className="text-mute">Bring your history over from Strong to see your stats here.</p>
-          <Link to="/import" className="btn btn-primary flex items-center justify-center">Import Strong CSV</Link>
+          <p className="text-mute">Your stats, muscle map and coaching appear here after your first workout.</p>
+          <Link to="/workout" className="btn btn-primary flex items-center justify-center">Start your first workout</Link>
+          <Link to="/import" className="block text-xs text-mute underline decoration-dotted">Coming from Strong? Import your history</Link>
         </div>
       )}
 

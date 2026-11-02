@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { applyFix } from '../../coaching/actions'
-import { goalLabel, priorityMuscles, TIER_RANGE } from '../../coaching/goals'
+import { goalLabel, priorityMuscles, STYLE_LABEL, STYLE_RANGE } from '../../coaching/goals'
 import { programReview } from '../../coaching/hypertrophy'
 import type { History } from '../../coaching/types'
 import { setSetting } from '../../db/settings'
@@ -24,9 +24,9 @@ export default function CoachSection({ h, settings, now }: { h: History; setting
   const applied = settings.coachState.applied ?? {}
 
   const review = useMemo(() => programReview({
-    h, goal: settings.goal, targets: settings.weeklyTargets, now, startDay: settings.weekStartDay,
+    h, goal: settings.goal, targets: settings.weeklyTargets, now, startDay: settings.weekStartDay, phase: settings.phase,
     candidates: (items ?? []).map((i) => ({ key: i.key, name: i.name, muscles: i.muscles, mine: i.mine, sets: i.sets })),
-  }), [h, settings.goal, settings.weeklyTargets, settings.weekStartDay, now, items])
+  }), [h, settings.goal, settings.weeklyTargets, settings.weekStartDay, settings.phase, now, items])
 
   async function apply(id: string, fix: NonNullable<ReturnType<typeof programReview>>['items'][number]['fix']) {
     if (!fix) return
@@ -47,12 +47,13 @@ export default function CoachSection({ h, settings, now }: { h: History; setting
           <div className="min-w-0">
             <div className="text-xs font-semibold uppercase tracking-wider text-mute">Your goal</div>
             <div className="text-lg font-extrabold leading-tight">{goalLabel(settings.goal) ?? 'Not set yet'}</div>
+            <div className="mt-0.5 text-xs font-semibold text-mute">{settings.phase === 'cut' ? '🔥 Cutting: hold your strength' : settings.phase === 'maintain' ? 'Maintaining' : 'Building'} · {STYLE_LABEL[settings.volumeStyle]} volume</div>
           </div>
           <button className="press rounded-xl bg-card2 px-3 py-2 text-sm font-semibold text-accent" onClick={() => setGoalOpen(true)}>{settings.goal ? 'Change' : 'Choose'}</button>
         </div>
         {settings.goal ? (
           <div className="flex flex-wrap gap-1.5">
-            {prio.length ? prio.map((m) => <span key={m} className="chip chip-on flex items-center !min-h-[28px] text-xs">{MUSCLE_LABELS[m]}</span>) : <span className="text-sm text-mute">Every muscle gets steady volume ({TIER_RANGE.standard.min}–{TIER_RANGE.standard.max} sets a week).</span>}
+            {prio.length ? prio.map((m) => <span key={m} className="chip chip-on flex items-center !min-h-[28px] text-xs">{MUSCLE_LABELS[m]}</span>) : <span className="text-sm text-mute">Every muscle gets steady volume ({STYLE_RANGE[settings.volumeStyle].standard.min}–{STYLE_RANGE[settings.volumeStyle].standard.max} sets a week).</span>}
           </div>
         ) : <p className="text-sm text-mute">Tell LiftLog what you want to build and it tunes your weekly sets and suggestions.</p>}
       </div>

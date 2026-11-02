@@ -30,10 +30,13 @@ function displayName(variants: string[]): string {
   return best === best.toLowerCase() ? best.replace(/\b\w/g, (c) => c.toUpperCase()) : best
 }
 
-/** A rep range around what you actually do: the usual 8-12, unless your typical reps live elsewhere. */
-function repRange(typical: number): { repMin: number; repMax: number } {
+/**
+ * A rep range around what you actually do. If your typical reps sit at or just under your ceiling (default 12),
+ * the range tops out at that ceiling, so targets never ask for more reps than you want to do.
+ */
+export function repRange(typical: number, ceiling = 12): { repMin: number; repMax: number } {
   const m = Math.round(typical)
-  if (m >= 6 && m <= 12) return { repMin: 8, repMax: 12 }
+  if (m >= 6 && m <= ceiling + 1) return { repMin: Math.max(3, ceiling <= 12 ? ceiling - 4 : ceiling - 5), repMax: ceiling }
   const repMin = Math.min(30, Math.max(1, m - 2))
   return { repMin, repMax: Math.min(40, Math.max(repMin + 2, m + 3)) }
 }
@@ -49,7 +52,7 @@ export const OFFER_MAX_AGE_DAYS = 365
  */
 export function inferTemplates(
   h: { workouts: Workout[]; sets: WorkoutSet[]; exercises: Map<number, Exercise> },
-  o: { now: number; minSessions?: number; maxAgeDays?: number; limit?: number } = { now: Date.now() },
+  o: { now: number; minSessions?: number; maxAgeDays?: number; limit?: number; repCeiling?: number } = { now: Date.now() },
 ): TemplateCandidate[] {
   const minSessions = o.minSessions ?? OFFER_MIN_SESSIONS
   const maxAge = o.maxAgeDays ?? OFFER_MAX_AGE_DAYS
@@ -79,7 +82,7 @@ export function inferTemplates(
       if (!ex) continue
       const inLatest = latest.filter((s) => s.exerciseId === id).length
       const reps = recent.flatMap((w) => (setsBy.get(w.id!) ?? []).filter((s) => s.exerciseId === id && s.reps > 0).map((s) => s.reps))
-      items.push({ exerciseId: id, name: ex.name, sets: Math.min(6, Math.max(1, inLatest)), ...repRange(reps.length ? median(reps) : 10) })
+      items.push({ exerciseId: id, name: ex.name, sets: Math.min(6, Math.max(1, inLatest)), ...repRange(reps.length ? median(reps) : 10, o.repCeiling ?? 12) })
     }
     if (!items.length) continue
     out.push({ key, name: displayName(ws.map((w) => w.name)), sessions: sorted.length, lastAt: sorted[0].startedAt, items: items.slice(0, 12) })

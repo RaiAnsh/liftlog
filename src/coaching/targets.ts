@@ -12,6 +12,8 @@ export interface TargetOpts {
   fmt: (kg: number) => string
   /** the user picked "deload" on a plateau card and hasn't trained the lift since */
   deload?: boolean
+  /** cutting: matching last time is the goal, so never prescribe an increase */
+  hold?: boolean
 }
 
 /** Average RPE at or above this means "don't add weight yet", even if the reps were hit. */
@@ -44,6 +46,14 @@ export function nextTarget(last: WorkoutSet[] | undefined, o: TargetOpts): Targe
       return { weightKg: r < s.weightKg - EPS ? r : Math.max(0, s.weightKg - inc), reps: Math.min(s.reps, repMax) }
     })
     return { kind: 'deload', sets: lighter, reason: `Deload: 10% lighter than last time (${fmt(w0)} → ${fmt(lighter[0].weightKg)}) to break the plateau` }
+  }
+
+  if (o.hold) {
+    const detail = allSame ? `${fmt(w0)} × ${list}` : sets.map((s) => `${fmt(s.weightKg)}×${s.reps}`).join(', ')
+    return {
+      kind: 'hold', sets: sets.map((s) => ({ weightKg: s.weightKg, reps: s.reps })),
+      reason: `Cutting: matching last time (${detail}) keeps your muscle. Beat it and that's a bonus.`,
+    }
   }
 
   if (allSame && hitMax) {

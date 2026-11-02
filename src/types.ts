@@ -105,10 +105,21 @@ export interface Settings {
   goalAsked: boolean
   /** your answer to "use this workout as a template?", by normalised workout name. Declined ones are never offered again */
   templateChoices: Record<string, 'added' | 'declined'>
+  phase: Phase
+  volumeStyle: VolumeStyle
+  /** the top of your usual rep range (default 12); used for new and inferred templates */
+  repCeiling: number
+  /** your week: routine id per weekday, 0 = Sunday ... 6 = Saturday (null = rest). null until you plan one */
+  plan: (number | null)[] | null
+  planDays: number[]
   coachState: CoachState
 }
 
 export type Tier = 'priority' | 'standard' | 'light'
+/** Where you are with your body-weight goal. Cutting changes what "progress" and "coaching" mean. */
+export type Phase = 'build' | 'maintain' | 'cut'
+/** How many hard sets per muscle per week you realistically train. */
+export type VolumeStyle = 'efficient' | 'standard' | 'high'
 export type GoalId = 'vtaper' | 'glutes' | 'balanced' | 'custom'
 
 export interface SkipEntry {
@@ -144,6 +155,11 @@ export const DEFAULT_SETTINGS: Settings = {
   goal: null,
   goalAsked: false,
   templateChoices: {},
+  phase: 'build',
+  volumeStyle: 'standard',
+  repCeiling: 12,
+  plan: null,
+  planDays: [],
   coachState: { deload: {}, dismissed: {} },
 }
 

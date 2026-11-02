@@ -5,7 +5,7 @@ import { ChevronRight } from '../components/Icons'
 import BackupSection from '../components/BackupSection'
 import InstallHint from '../components/InstallHint'
 import GoalSheet from '../components/GoalSheet'
-import { goalLabel } from '../coaching/goals'
+import { goalLabel, STYLE_LABEL } from '../coaching/goals'
 import { useState } from 'react'
 
 const PLATE_OPTIONS = { lb: [100, 55, 45, 35, 25, 15, 10, 5, 2.5, 1.25], kg: [25, 20, 15, 10, 5, 2.5, 1.25, 0.5] }
@@ -39,6 +39,11 @@ export default function Settings() {
         <div className="label px-1">Training</div>
         <div className="overflow-hidden rounded-2xl bg-card">
           <button onClick={() => setGoalOpen(true)} className="row-press flex w-full items-center justify-between px-4 py-3.5 text-left"><span>Training goal <span className="text-mute">· {goalLabel(s.goal) ?? 'not set'}</span></span><span className="text-mute"><ChevronRight /></span></button>
+          <button onClick={() => setGoalOpen(true)} className="row-press flex w-full items-center justify-between border-t border-line px-4 py-3.5 text-left"><span>Phase &amp; volume <span className="text-mute">· {s.phase === 'cut' ? 'Cutting' : s.phase === 'maintain' ? 'Maintaining' : 'Building'}, {STYLE_LABEL[s.volumeStyle]}</span></span><span className="text-mute"><ChevronRight /></span></button>
+          <div className="flex items-center justify-between border-t border-line px-4 py-3">
+            <span>Top of my rep range</span>
+            <div className="flex gap-1.5">{[10, 12, 15, 20].map((n) => <button key={n} onClick={() => setSetting('repCeiling', n)} className={`chip num flex items-center !min-h-[34px] ${s.repCeiling === n ? 'chip-on' : ''}`}>{n}</button>)}</div>
+          </div>
           <LinkRow to="/science">The science behind LiftLog</LinkRow>
         </div>
       </section>
@@ -81,11 +86,11 @@ export default function Settings() {
       <section className="space-y-2">
         <div className="label px-1">Data</div>
         <div className="overflow-hidden rounded-2xl bg-card">
-          <LinkRow to="/import">Import from Strong</LinkRow>
-          <LinkRow to="/tags">Review muscle tags</LinkRow>
           <LinkRow to="/routines">Templates &amp; rotation</LinkRow>
           <LinkRow to="/exercises">Exercise library</LinkRow>
+          <LinkRow to="/tags">Review muscle tags</LinkRow>
           <LinkRow to="/plates">Plate calculator</LinkRow>
+          <LinkRow to="/import">Import from Strong (optional)</LinkRow>
         </div>
       </section>
       <p className="px-1 text-xs text-mute">Exercise images and instructions: free-exercise-db (public domain).</p>

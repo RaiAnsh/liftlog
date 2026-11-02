@@ -17,6 +17,7 @@ import Sheet, { SheetRow } from '../components/Sheet'
 import { fmtClock, useNow } from '../lib/useNow'
 import { displayToKm, distUnit, formatWeight, kmToDisplay, toKg } from '../units'
 import { fmtCardio } from '../lib/stats'
+import { progressLabel, progressPct } from '../lib/progress'
 import { isCardio } from '../db/exercises'
 import {
   addSet, addWarmups, completedSetCount, draftExercise, incompleteSetCount, moveExercise, patchExercise, previousFor, removeExercise,
@@ -33,6 +34,8 @@ const TYPES: { t: SetType; label: string; tag: string; cls: string }[] = [
   { t: 'failure', label: 'Failure', tag: 'F', cls: 'text-red-500' },
 ]
 const REST_CHOICES = [0, 30, 60, 90, 120, 180, 240, 300]
+const TONE_CLASS = { up: 'bg-good/15 text-good', same: 'bg-card2 text-mute', down: 'bg-warn/15 text-warn' } as const
+
 const fmtRest = (s: number) => (s === 0 ? 'Off' : s < 60 ? `${s}s` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`)
 const parseNum = (t: string): number | null => {
   const n = Number(t.replace(',', '.'))
@@ -141,10 +144,29 @@ function SetRow({ ex, set, index, prev, units, bests, target }: { ex: DraftExerc
 
 const getD = () => getDraft()!
 
-function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests, target, advice }: {
-  ex: DraftExercise; def: Exercise | undefined; prev: WorkoutSet[] | undefined; units: Unit; index: number; total: number; supersetLabel: string | null; bests: Bests | undefined; target: Target | null; advice: Advice[]
+/** Changes the top of an exercise's rep range for this workout, the exercise's default, and the template it came from. */
+async function setTopOfRange(ex: DraftExercise, max: number) {
+  const min = Math.max(3, Math.min(ex.repMin ?? 8, max - 2))
+  updateDraft((d) => patchExercise(d, ex.uid, { repMax: max, repMin: min }))
+  const routineId = getDraft()?.routineId
+  await db.transaction('rw', db.exercises, db.routines, async () => {
+    await db.exercises.update(ex.exerciseId, { repRangeMax: max, repRangeMin: min })
+    if (routineId != null) {
+      const r = await db.routines.get(routineId)
+      if (r) await db.routines.update(routineId, { items: r.items.map((i) => (i.exerciseId === ex.exerciseId ? { ...i, repRangeMax: max, repRangeMin: min } : i)) })
+    }
+  })
+}
+
+function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests, target, advice, cutting }: {
+  ex: DraftExercise; def: Exercise | undefined; prev: WorkoutSet[] | undefined; units: Unit; index: number; total: number; supersetLabel: string | null; bests: Bests | undefined; target: Target | null; advice: Advice[]; cutting: boolean
 }) {
   const nav = useNavigate()
+  // How today compares with last time, updating as you complete sets. 0% means you matched it.
+  const hard = (s: { completed?: boolean; type: string }) => s.completed && s.type !== 'warmup'
+  const cur = ex.sets.filter(hard).map((s) => ({ weightKg: s.weightKg ?? 0, reps: s.reps ?? 0 }))
+  const pct = !ex.cardio && cur.length ? progressPct(prev?.filter(hard).map((s) => ({ weightKg: s.weightKg, reps: s.reps })), cur) : null
+  const prog = pct === null ? null : progressLabel(pct, cutting)
   const [menu, setMenu] = useState(false)
   const [swap, setSwap] = useState(false)
   const [warm, setWarm] = useState(false)
@@ -166,6 +188,7 @@ function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests
         </button>
         <button onClick={() => setMenu(true)} className="flex h-11 w-11 items-center justify-center rounded-full text-2xl text-mute" aria-label="Exercise options">⋯</button>
       </div>
+      {prog && <div className={`pop mb-2 inline-block rounded-full px-3 py-1 text-xs font-bold ${TONE_CLASS[prog.tone]}`} key={prog.text}>{prog.text}</div>}
       {target && (
         <div className="mb-2 rounded-xl bg-accent/10 px-3 py-2">
           <div className="num text-sm font-bold text-accent">🎯 Target {describeTarget(target, (kg) => `${formatWeight(kg, units)} ${units}`)}</div>
@@ -206,6 +229,17 @@ function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests
           <SheetRow onClick={() => { updateDraft((d) => toggleSuperset(d, ex.uid)); setMenu(false) }}>
             {ex.superset !== null ? 'Remove from superset' : index === total - 1 ? 'Superset with next (none below)' : 'Superset with next exercise'}
           </SheetRow>
+          {!ex.cardio && (
+            <div className="border-t border-line px-1 py-3">
+              <div className="mb-1 text-[17px]">Top of rep range <span className="text-sm text-mute">· {ex.repMin ?? 8}–{ex.repMax ?? 12}</span></div>
+              <p className="mb-2 text-xs text-mute">Targets add reps up to this, then raise the weight. Saved for this exercise and its template.</p>
+              <div className="flex flex-wrap gap-2">
+                {[8, 10, 12, 15, 20].map((n) => (
+                  <button key={n} className={`chip num flex items-center ${ex.repMax === n ? 'chip-on' : ''}`} onClick={() => void setTopOfRange(ex, n)}>{n}</button>
+                ))}
+              </div>
+            </div>
+          )}
           {!ex.cardio && <SheetRow on={ex.showRpe} onClick={() => pat({ showRpe: !ex.showRpe })}>Track RPE</SheetRow>}
           {!ex.cardio && <div className="border-t border-line px-1 py-3">
             <div className="mb-2 text-[17px]">Rest timer</div>
@@ -233,7 +267,7 @@ function ExerciseCard({ ex, def, prev, units, index, total, supersetLabel, bests
 
 export default function ActiveWorkout({ draft, avgWeekly = null }: { draft: Draft; avgWeekly?: MuscleCounts | null }) {
   const nav = useNavigate()
-  const { units, defaultRestSeconds, coachState, weeklyTargets } = useSettings()
+  const { units, defaultRestSeconds, coachState, weeklyTargets, phase } = useSettings()
   const now = useNow(1000)
   const [adding, setAdding] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -248,21 +282,21 @@ export default function ActiveWorkout({ draft, avgWeekly = null }: { draft: Draf
       const def = exMap?.get(ex.exerciseId)
       m.set(ex.uid, def && !isCardio(def) ? nextTarget(prev?.get(ex.exerciseId), {
         repMin: ex.repMin ?? def.repRangeMin, repMax: ex.repMax ?? def.repRangeMax, incrementKg: def.weightIncrement,
-        fmt: (kg) => `${formatWeight(kg, units)} ${units}`, deload: ex.exerciseId in coachState.deload,
+        fmt: (kg) => `${formatWeight(kg, units)} ${units}`, deload: ex.exerciseId in coachState.deload, hold: phase === 'cut',
       }) : null)
     }
     return m
-  }, [draft.exercises, exMap, prev, units, coachState])
+  }, [draft.exercises, exMap, prev, units, coachState, phase])
 
   // Hypertrophy tips per exercise: from last session, your typical weekly volume, and how much you've stacked today.
   const advice = useMemo(() => {
     const m = new Map<string, Advice[]>()
     for (const ex of draft.exercises) {
       const def = exMap?.get(ex.exerciseId)
-      m.set(ex.uid, def && !isCardio(def) ? exerciseAdvice({ exercise: def, last: prev?.get(ex.exerciseId), avgWeekly, targets: weeklyTargets, plannedToday: def.primaryMuscles[0] ? plannedSetsFor(draft, exMap!, def.primaryMuscles[0]) : 0 }) : [])
+      m.set(ex.uid, def && !isCardio(def) ? exerciseAdvice({ exercise: def, last: prev?.get(ex.exerciseId), avgWeekly, targets: weeklyTargets, phase, plannedToday: def.primaryMuscles[0] ? plannedSetsFor(draft, exMap!, def.primaryMuscles[0]) : 0 }) : [])
     }
     return m
-  }, [draft, exMap, prev, avgWeekly, weeklyTargets])
+  }, [draft, exMap, prev, avgWeekly, weeklyTargets, phase])
 
   const groups = [...new Set(draft.exercises.map((e) => e.superset).filter((g): g is number => g !== null))]
 
@@ -303,7 +337,7 @@ export default function ActiveWorkout({ draft, avgWeekly = null }: { draft: Draf
       {draft.exercises.length === 0 && <div className="card text-center text-mute">Add your first exercise to get started.</div>}
 
       {draft.exercises.map((ex, i) => (
-        <ExerciseCard key={ex.uid} ex={ex} def={exMap?.get(ex.exerciseId)} prev={prev?.get(ex.exerciseId)} bests={bests?.get(ex.exerciseId)} target={targets.get(ex.uid) ?? null} advice={advice.get(ex.uid) ?? []} units={units}
+        <ExerciseCard key={ex.uid} ex={ex} def={exMap?.get(ex.exerciseId)} prev={prev?.get(ex.exerciseId)} bests={bests?.get(ex.exerciseId)} target={targets.get(ex.uid) ?? null} advice={advice.get(ex.uid) ?? []} cutting={phase === 'cut'} units={units}
           index={i} total={draft.exercises.length}
           supersetLabel={ex.superset === null ? null : String.fromCharCode(65 + groups.indexOf(ex.superset))} />
       ))}

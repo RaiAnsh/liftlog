@@ -1,11 +1,11 @@
 import { locate } from '../lib/exerciseGroups'
-import { MUSCLE_LABELS, MUSCLES, type ActiveWorkout, type Exercise, type Muscle, type Settings, type Tier, type WorkoutSet } from '../types'
+import { MUSCLE_LABELS, MUSCLES, type ActiveWorkout, type Exercise, type Muscle, type Phase, type Settings, type Tier, type WorkoutSet } from '../types'
 import { routineContribution } from './suggest'
 import type { History } from './types'
 import { addDays, countMuscleSets, emptyCounts, fmtSets, rangeFor, weekStartOf, type MuscleCounts } from './volume'
 
 /** Which research summary (src/data/science.ts) backs a piece of advice. */
-export type SciId = 'volume' | 'effort' | 'load' | 'rest' | 'frequency' | 'session' | 'maintenance'
+export type SciId = 'volume' | 'effort' | 'load' | 'rest' | 'frequency' | 'session' | 'maintenance' | 'cut'
 
 export interface Advice {
   id: string
@@ -45,6 +45,8 @@ export function exerciseAdvice(o: {
   avgWeekly: MuscleCounts | null
   targets: Settings['weeklyTargets']
   plannedToday?: number
+  /** while cutting, never suggest adding sets: the aim is to hold what you have */
+  phase?: Phase
 }): Advice[] {
   const ex = o.exercise
   const sets = (o.last ?? []).filter(isWorking).sort((a, b) => a.order - b.order)
@@ -72,7 +74,7 @@ export function exerciseAdvice(o: {
       const r = rangeFor(muscle, o.targets)
       const avg = o.avgWeekly[muscle]
       const allProductive = sets.every((s) => s.reps >= ex.repRangeMin)
-      if (avg < r.min * THRESHOLDS.shortOfGoal && sets.length < 5 && allProductive) {
+      if (avg < r.min * THRESHOLDS.shortOfGoal && sets.length < 5 && allProductive && o.phase !== 'cut') {
         out.push({ id: `${ex.id}-add`, kind: 'add-set', sci: 'volume', text: `Add a set next time. Your ${lc(muscle)} average about ${fmtSets(Math.round(avg * 2) / 2)} sets a week, short of the ${r.min}+ your goal calls for.` })
       } else if (avg > r.max * THRESHOLDS.overGoal && sets.length >= 4) {
         out.push({ id: `${ex.id}-trim`, kind: 'trim-set', sci: 'volume', text: `You can drop a set here. Your ${lc(muscle)} average about ${fmtSets(Math.round(avg * 2) / 2)} sets a week, above your goal's ${r.max}; extra sets add little and cost recovery.` })
@@ -171,6 +173,8 @@ export function chooseFix(muscle: Muscle, gap: number, h: History, candidates: C
  */
 export function programReview(o: {
   h: History; goal: Settings['goal']; targets: Settings['weeklyTargets']; now: number; startDay: 0 | 1; candidates: Candidate[]; limit?: number
+  /** cutting: no "add more sets" suggestions, only keep-what-you-have ones */
+  phase?: Phase
 }): { items: ReviewItem[]; weeks: number; from: number; to: number } | null {
   const wa = weeklyAverages(o.h, o.now, o.startDay)
   if (!wa) return null
@@ -183,7 +187,7 @@ export function programReview(o: {
     const avg = wa.avg[m], per = wa.sessions[m]
     const gap = r.min - avg
 
-    if (tier !== 'light' && gap >= 2) {
+    if (tier !== 'light' && gap >= 2 && o.phase !== 'cut') {
       items.push({
         id: `add-${m}`, kind: 'add', muscle: m, tier, sci: 'volume',
         title: `${MUSCLE_LABELS[m]} needs more work`,

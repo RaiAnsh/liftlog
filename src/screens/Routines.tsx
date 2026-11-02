@@ -28,13 +28,13 @@ export async function duplicateRoutine(r: Routine) {
 
 export default function Routines() {
   const list = useLiveQuery(() => db.routines.orderBy('order').toArray())
-  const { program, templateChoices } = useSettings()
+  const { program, templateChoices, repCeiling } = useSettings()
   const h = useHistory()
   const [offer, setOffer] = useState<TemplateCandidate[] | null>(null)
   // Deliberate request: include older workouts and ones you said no to earlier.
   const findInHistory = () => {
     if (!h) return
-    const found = pendingOffers(inferTemplates(h, { now: Date.now(), minSessions: 2, maxAgeDays: 100_000 }), h.routines, templateChoices, true)
+    const found = pendingOffers(inferTemplates(h, { now: Date.now(), minSessions: 2, maxAgeDays: 100_000, repCeiling }), h.routines, templateChoices, true)
     if (found.length) setOffer(found)
     else showToast('Nothing new to suggest', { sub: 'Every workout you repeat already has a template.' })
   }

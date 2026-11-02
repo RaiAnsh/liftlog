@@ -7,6 +7,7 @@ import { startFromWorkout } from '../workout/draft'
 import { getDraft, startDraft } from '../workout/store'
 import { BackBar } from '../components/PageHeader'
 import ExerciseThumb from '../components/ExerciseThumb'
+import { progressLabel, progressPct } from '../lib/progress'
 import { fmtCardio, formatDuration, formatVolume, groupByExercise, isHard, volumeKg } from '../lib/stats'
 import { formatEstimate, formatWeight } from '../units'
 
@@ -17,7 +18,7 @@ const TAG: Record<string, { t: string; c: string }> = {
 export default function WorkoutDetail() {
   const id = Number(useParams().id)
   const nav = useNavigate()
-  const { units, defaultRestSeconds } = useSettings()
+  const { units, defaultRestSeconds, phase } = useSettings()
   const justDone = useSearchParams()[0].get('done') === '1'
   const data = useLiveQuery(async () => {
     const workout = await db.workouts.get(id)
@@ -29,7 +30,7 @@ export default function WorkoutDetail() {
     const prior = workout && ids.length
       ? (await db.sets.where('exerciseId').anyOf(ids).toArray()).filter((s) => s.workoutId !== id && (priorStart.get(s.workoutId) ?? 0) < workout.startedAt)
       : []
-    return { workout, sets, ex, prior }
+    return { workout, sets, ex, prior, priorStart }
   }, [id])
   if (!data) return <p className="text-mute">Loading…</p>
   const w = data.workout
@@ -102,11 +103,17 @@ export default function WorkoutDetail() {
       {groupByExercise(data.sets).map((g) => {
         const ex = data.ex.get(g.exerciseId)
         let n = 0
+        // The same exercise in your most recent earlier workout, to show how this session compared.
+        const earlier = data.prior.filter((s) => s.exerciseId === g.exerciseId)
+        const lastWid = earlier.reduce<number | null>((best, s) => (best === null || (data.priorStart.get(s.workoutId) ?? 0) > (data.priorStart.get(best) ?? 0) ? s.workoutId : best), null)
+        const pct = lastWid === null ? null : progressPct(earlier.filter((s) => s.workoutId === lastWid && isHard(s)), g.sets.filter(isHard))
+        const prog = pct === null ? null : progressLabel(pct, phase === 'cut')
         return (
           <div key={g.exerciseId} className="card">
             <Link to={`/exercise/${encodeURIComponent(ex?.nameKey ?? '')}`} className="mb-3 flex items-center gap-3">
               <ExerciseThumb name={ex?.name ?? '?'} muscles={ex?.primaryMuscles} secondary={ex?.secondaryMuscles} size={44} />
-              <span className="flex-1 font-semibold text-accent">{ex?.name}</span>
+              <span className="min-w-0 flex-1 truncate font-semibold text-accent">{ex?.name}</span>
+              {prog && <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${prog.tone === 'up' ? 'bg-good/15 text-good' : prog.tone === 'down' ? 'bg-warn/15 text-warn' : 'bg-card2 text-mute'}`}>{prog.text.replace(' vs last time', '')}</span>}
             </Link>
             <div className="label mb-1 grid grid-cols-[36px_1fr_auto] px-1"><span>Set</span><span>Weight × reps</span><span>RPE</span></div>
             {g.sets.map((s) => {

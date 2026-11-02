@@ -39,7 +39,8 @@ export function compute(h: History, s: Settings, now: number) {
     if (!exercise || exercise.archived) continue
     const points = sessionPoints(sets, h.workouts)
     const plateau = detectPlateau(points, now)
-    if (plateau && s.coachState.dismissed[id] !== points.length) plateaus.push({ exercise, plateau, points })
+    // Cutting: holding your weights is the goal, so a flat lift isn't a problem worth flagging.
+    if (plateau && s.phase !== 'cut' && s.coachState.dismissed[id] !== points.length) plateaus.push({ exercise, plateau, points })
   }
   plateaus.sort((a, b) => b.points[b.points.length - 1].date - a.points[a.points.length - 1].date)
 

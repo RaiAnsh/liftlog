@@ -19,7 +19,7 @@ volume, "do this next time" tips, program review, plateau detection).
 2. Tap the **Share** button → **Add to Home Screen** → **Add**.
 3. Open **LiftLog** from your Home Screen. After the first load it works offline.
 
-## Bring your history over from Strong
+## Coming from Strong? (optional)
 
 1. In the Strong app: **Profile → Settings → Export Strong Data** (wording can vary by version). Strong emails or
    saves a `strong_workouts.csv` file. Put it somewhere your phone can open (Files, iCloud Drive, or email it to yourself).
@@ -69,6 +69,19 @@ elliptical, stair climber, rowing and more). If your exercise still isn't there,
 pick the equipment and tap the muscles it works (once for a main muscle, again for "also works"). It's saved to *your* data and counts toward weekly
 volume, goal targets, coach tips and Push/Pull/Legs filing exactly like a built-in one. You can fix the muscles of any exercise later from its page.
 Cardio exercises are logged as time and distance instead of weight and reps.
+
+## Plan your week, phases and recommendations
+
+- **Plan your week:** on the Workout tab, pick the days you're free and LiftLog assigns your templates to them (Monday Push, Wednesday Pull...). Change any
+  day or leave it as rest. "Up next" then follows the plan, and a week strip shows what's done, skipped 😢 or coming up.
+- **Phase:** tell it whether you're **Building**, **Maintaining** or **Cutting**. On a cut, the target is to *match last time* (holding your weights is the win),
+  it stops suggesting extra sets, and flat lifts aren't flagged as stalled.
+- **Volume style:** **Efficient** (about 2 hard sets per exercise), **Standard** or **High** set how many weekly sets each muscle aims for. LiftLog suggests Efficient
+  if that's how you already train. 14–22 weekly sets is the maximise-growth end, not a requirement.
+- **Recommended for you:** a couple of nudges, like easy cardio when you're cutting, a rest day after a long run of training days, or the workout that hits your
+  most under-trained priority muscle.
+- **% vs last time:** each exercise shows how today compares with your last session (a ▲, ▼ or 0%), live as you log and in History.
+- **Top of my rep range** (Settings, or per exercise in a workout) controls where targets stop adding reps and raise the weight instead.
 
 ## Your goal and the hypertrophy coach
 

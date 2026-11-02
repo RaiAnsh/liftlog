@@ -19,7 +19,7 @@ export interface WeekSummary {
 }
 
 /** The end-of-week card: what got done, where volume landed, records, and stalled lifts. */
-export function weeklySummary(h: History, weekStart: number, targets: Settings['weeklyTargets'], now: number, skipLog: SkipEntry[] = []): WeekSummary {
+export function weeklySummary(h: History, weekStart: number, targets: Settings['weeklyTargets'], now: number, skipLog: SkipEntry[] = [], o: { cutting?: boolean } = {}): WeekSummary {
   const end = addDays(weekStart, 7)
   const wks = h.workouts.filter((w) => w.startedAt >= weekStart && w.startedAt < end)
   const ids = new Set(wks.map((w) => w.id!))
@@ -33,7 +33,7 @@ export function weeklySummary(h: History, weekStart: number, targets: Settings['
   for (const s of h.sets) (byEx.get(s.exerciseId) ?? byEx.set(s.exerciseId, []).get(s.exerciseId)!).push(s)
   const asOf = Math.min(now, end)
   const stalled: number[] = []
-  for (const [id, sets] of byEx) {
+  for (const [id, sets] of o.cutting ? [] : byEx) {
     const pts = sessionPoints(sets, h.workouts.filter((w) => w.startedAt < end))
     if (pts.length && pts[pts.length - 1].date >= weekStart && detectPlateau(pts, asOf)) stalled.push(id)
   }

@@ -22,11 +22,12 @@ export interface Principle {
 export const PRINCIPLES: Principle[] = [
   {
     id: 'volume', title: 'How many sets per muscle each week', confidence: 'Well supported',
-    rule: 'Your goal sets a weekly range for each muscle: Priority 14–22, Standard 10–16, Maintain 5–9 hard sets. A primary muscle counts as 1 set, a secondary muscle as 0.5. The coach flags muscles that average below their range and suggests adding sets.',
+    rule: 'Your goal sets a weekly range for each muscle, scaled by your volume style. Standard: Priority 14–22, Standard 10–16, Maintain 5–9 hard sets. Efficient (about 2 sets per exercise): 8–14, 6–10, 3–6. A primary muscle counts as 1 set, a secondary muscle as 0.5. The coach flags muscles that average below their range and suggests adding sets. The higher ranges are the maximise-growth end, not a requirement.',
     evidence: 'Meta-analyses find that more weekly sets generally means more muscle growth, with diminishing returns. Schoenfeld, Ogborn & Krieger (2017) reported a graded dose-response relationship. A larger meta-regression preprint (Pelland et al., 2024) found growth keeps rising but tapers, with no detectable extra benefit beyond roughly 31 "fractional" sets per week.',
-    caveat: 'The best number varies by person, muscle and how well you recover, and the exact figures above are cautious practical choices, not hard limits. The 0.5-set credit for secondary muscles is a convention, not a measurement. Pelland et al. is a preprint.',
+    caveat: 'Low volume still works, just with a smaller payoff: a meta-analysis summarised by Schoenfeld and colleagues reported roughly 5% average growth under 5 weekly sets per muscle versus about 10% at 10 or more, and Krieger (2010) found multiple sets beat a single set by a modest margin. That is why an efficient style exists. The best number varies by person, muscle and recovery; the figures above are cautious practical choices, not hard limits. The 0.5-set credit for secondary muscles is a convention. Pelland et al. is a preprint.',
     cites: [
       { text: 'Schoenfeld BJ, Ogborn D, Krieger JW. Dose-response relationship between weekly resistance training volume and increases in muscle mass: a systematic review and meta-analysis. J Sports Sci. 2017.' },
+      { text: 'Krieger JW. Single vs. multiple sets of resistance exercise for muscle hypertrophy: a meta-analysis. J Strength Cond Res. 2010.', url: 'https://pubmed.ncbi.nlm.nih.gov/20300012/' },
       { text: 'Pelland JC, Remmert JF, Robinson ZP, Hinson SR, Zourdos MC. The resistance training dose-response: meta-regressions exploring the effects of weekly volume and frequency on muscle hypertrophy and strength gain (SportRxiv preprint).', url: 'https://sportrxiv.org/index.php/server/preprint/download/537/1148/1071' },
     ],
   },
@@ -76,6 +77,16 @@ export const PRINCIPLES: Principle[] = [
     cites: [
       { text: 'Bickel CS, Cross JM, Bamman MM. Exercise dosing to retain resistance training adaptations in young and older adults. Med Sci Sports Exerc. 2011;43(7):1177–1187.' },
       { text: 'Spiering BA, Mujika I, Sharp MA, Foulis SA. Maintaining physical performance: the minimal dose of exercise needed to preserve endurance and strength over time. J Strength Cond Res. 2021.', url: 'https://pubmed.ncbi.nlm.nih.gov/33629972/' },
+    ],
+  },
+  {
+    id: 'cut', title: 'Lifting while you cut', confidence: 'Fairly supported',
+    rule: 'In Cutting mode, your target is to match last time (the same weight and reps), the coach stops suggesting more sets, and flat lifts are not flagged as stalled. Beating last time is a bonus, not the expectation.',
+    evidence: 'A 2022 meta-analysis of 15 studies in resistance-trained people found no clear benefit to reducing training volume during a calorie deficit, and a 2022 randomised trial in 38 trained men found volume made no difference to lean mass over a six-week diet. The practical reading: keep training hard with the loads you have, and expect holding them to be the realistic win while you are in a deficit. Keeping strength up is a reasonable signal that you are keeping muscle.',
+    caveat: 'This evidence is limited and partly correlational; deficit size, training experience, starting body fat and concurrent cardio can all change the picture, and women appear to retain lean mass better than men on average. Treat it as guidance, not a guarantee. Easy cardio such as walking is a common way to add calorie burn without costing much recovery, but it is a practical convention rather than something this app has tested.',
+    cites: [
+      { text: 'Meta-analysis of resistance training volume during energy restriction in resistance-trained people (Eur J Appl Physiol, 2022; 15 studies). Author names not verified here.', url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9012799' },
+      { text: 'Randomised trial of training volume and lean mass preservation in trained men during a six-week diet (2022), summarised by Stronger by Science.', url: 'https://www.strongerbyscience.com/research-spotlight-volume-muscle-dieting/' },
     ],
   },
 ]
