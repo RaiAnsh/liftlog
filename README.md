@@ -72,8 +72,11 @@ Cardio exercises are logged as time and distance instead of weight and reps.
 
 ## Plan your week, phases and recommendations
 
-- **Plan your week:** on the Workout tab, pick the days you're free and LiftLog assigns your templates to them (Monday Push, Wednesday Pull...). Change any
-  day or leave it as rest. "Up next" then follows the plan, and a week strip shows what's done, skipped 😢 or coming up.
+- **Plan your week:** on the Workout tab, pick the days you're free and LiftLog suggests a split that fits **how many days you train and what you're building**:
+  3 days is Push / Pull / Legs; 4 is Chest & Back / Legs / Shoulders & Arms / Upper (V-taper) or Upper / Lower twice (balanced); 5 adds a Shoulders & Arms and a
+  Chest & Back day; 6 is PPL twice; 7 adds an easy Cardio & Core day. With a **Glutes & legs** goal you get glute-focused versions (Glutes & Hams, Quads & Glutes,
+  Glute Pump & Abs, with upper days to balance). Templates you don't have are added; ones you already have with the same name are reused. Prefer your own?
+  Switch to "My templates" and assign them yourself. "Up next" follows the plan, and a week strip shows what's done, skipped 😢 or coming up.
 - **Phase:** tell it whether you're **Building**, **Maintaining** or **Cutting**. On a cut, the target is to *match last time* (holding your weights is the win),
   it stops suggesting extra sets, and flat lifts aren't flagged as stalled.
 - **Volume style:** **Efficient** (about 2 hard sets per exercise), **Standard** or **High** set how many weekly sets each muscle aims for. LiftLog suggests Efficient

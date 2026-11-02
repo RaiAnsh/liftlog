@@ -56,7 +56,7 @@ export default function Workout() {
   if (!h || !c || !prev) return <div className="space-y-3"><div className="skeleton h-12 w-52 rounded-xl" /><div className="skeleton h-14 rounded-2xl" /><div className="grid grid-cols-2 gap-3"><div className="skeleton h-32 rounded-2xl" /><div className="skeleton h-32 rounded-2xl" /></div></div>
 
   const have = new Set(h.routines.map((r) => nameKey(r.name)))
-  const examples = EXAMPLE_TEMPLATES.filter((t) => !have.has(nameKey(t.name)))
+  const examples = EXAMPLE_TEMPLATES.filter((t) => !t.hidden && !have.has(nameKey(t.name)))
   const names = (r: Routine) => r.items.map((i) => h.exercises.get(i.exerciseId)?.name ?? 'Exercise')
 
   return (

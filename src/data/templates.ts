@@ -1,9 +1,12 @@
 import { db as defaultDb, type LiftLogDB } from '../db/db'
 import { buildExercise, nameKey } from '../db/exercises'
 import type { Exercise, Routine, Unit } from '../types'
+import { SPLIT_TEMPLATES } from './splitTemplates'
 
 export interface TemplateItem { name: string; sets: number; repMin: number; repMax: number; rest: number }
-export interface ExampleTemplate { id: string; name: string; blurb: string; items: TemplateItem[] }
+export interface ExampleTemplate { id: string; name: string; blurb: string; items: TemplateItem[]
+  /** used by weekly split suggestions but not listed under Example templates */
+  hidden?: boolean }
 
 const t = (name: string, sets = 3, repMin = 8, repMax = 12, rest = 90): TemplateItem => ({ name, sets, repMin, repMax, rest })
 
@@ -11,7 +14,7 @@ const t = (name: string, sets = 3, repMin = 8, repMax = 12, rest = 90): Template
  * Starter templates built from what a typical commercial gym has (machines, cables, Smith machine, dumbbells).
  * They're ordinary templates once added: rename, reorder or swap anything.
  */
-export const EXAMPLE_TEMPLATES: ExampleTemplate[] = [
+const BASE_TEMPLATES: ExampleTemplate[] = [
   {
     id: 'push', name: 'Push', blurb: 'Chest, shoulders, triceps',
     items: [t('Chest Press (Machine)', 3, 8, 12, 120), t('Incline Chest Press (Machine)'), t('Shoulder Press (Machine)'), t('Lateral Raise (Dumbbell)', 3, 10, 15, 60), t('Triceps Pushdown (Cable - Straight Bar)', 3, 10, 15, 60), t('Triceps Extension (Machine)', 3, 10, 15, 60)],
@@ -30,7 +33,7 @@ export const EXAMPLE_TEMPLATES: ExampleTemplate[] = [
   },
   {
     id: 'upper', name: 'Upper Body', blurb: 'Chest, back, shoulders, arms',
-    items: [t('Chest Press (Machine)'), t('Lat Pulldown (Cable)'), t('Shoulder Press (Machine)'), t('Seated Row (Cable)'), t('Bicep Curl (Dumbbell)', 2, 10, 15, 60), t('Triceps Pushdown (Cable - Straight Bar)', 2, 10, 15, 60)],
+    items: [t('Chest Press (Machine)'), t('Lat Pulldown (Cable)'), t('Shoulder Press (Machine)'), t('Seated Row (Cable)'), t('Lateral Raise (Dumbbell)', 3, 10, 15, 60), t('Bicep Curl (Dumbbell)', 2, 10, 15, 60), t('Triceps Pushdown (Cable - Straight Bar)', 2, 10, 15, 60)],
   },
   {
     id: 'lower', name: 'Lower Body', blurb: 'Quads, hamstrings, glutes, calves',
@@ -41,6 +44,8 @@ export const EXAMPLE_TEMPLATES: ExampleTemplate[] = [
     items: [t('Bicep Curl (Machine)', 3, 8, 12, 75), t('Triceps Extension (Machine)', 3, 8, 12, 75), t('Hammer Curl (Dumbbell)', 3, 10, 15, 60), t('Triceps Pushdown (Cable - Straight Bar)', 3, 10, 15, 60), t('Forearm Curl (Dumbbell)', 3, 12, 20, 45)],
   },
 ]
+
+export const EXAMPLE_TEMPLATES: ExampleTemplate[] = [...BASE_TEMPLATES, ...SPLIT_TEMPLATES]
 
 /**
  * Creates a real template (routine) from an example, adding any exercises you don't have yet.
